@@ -1,4 +1,4 @@
-package main
+package lunii
 
 import (
 	"bufio"
@@ -10,7 +10,12 @@ import (
 	"github.com/google/uuid"
 )
 
-func readGlobalIndexFile() []Story {
+type Story struct {
+	uuid       uuid.UUID
+	folderName string
+}
+
+func ReadGlobalIndexFile() []Story {
 
 	stories := []Story{}
 	// read .pi file and get
@@ -45,4 +50,8 @@ func readGlobalIndexFile() []Story {
 		stories = append(stories, story)
 	}
 	return stories
+}
+
+func WriteGlobalIndexFile(stories []Story) {
+
 }

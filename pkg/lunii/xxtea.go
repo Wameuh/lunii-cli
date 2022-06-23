@@ -1,7 +1,7 @@
 /**
 This is a *custom* implementation of the xxtea algorithm.
 */
-package main
+package lunii
 
 import (
 	"bytes"

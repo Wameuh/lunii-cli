@@ -19,5 +19,9 @@ github.com/xxtea/xxtea-go v0.0.0-20170828040851-35c4b17eecf6 h1:S+0oS/OPAe0kdSpQ
 github.com/xxtea/xxtea-go v0.0.0-20170828040851-35c4b17eecf6/go.mod h1:2uvuCBt0VXxijrX5ieiAeeNT2+2MIsrs1DI9iXz7OOQ=
 github.com/yang3yen/xxtea-go v1.0.2 h1:HHxEqs0aKqWXCpFmghWUkTwz7zSK/cxd27t5pepuemg=
 github.com/yang3yen/xxtea-go v1.0.2/go.mod h1:baa5JUNAgCuVCNqYuWSSNNGTmmDyNMTtSSlNMqfli9M=
+golang.org/x/image v0.0.0-20220617043117-41969df76e82 h1:KpZB5pUSBvrHltNEdK/tw0xlPeD13M6M6aGP32gKqiw=
+golang.org/x/image v0.0.0-20220617043117-41969df76e82/go.mod h1:doUCurBvlfPMKfmIpRIywoHmhN3VyhnoFDbvIEWF4hY=
+golang.org/x/text v0.3.7/go.mod h1:u+2+/6zg+i71rQMx5EYifcz6MCKuco9NR6JIITiCfzQ=
+golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=

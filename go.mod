@@ -11,4 +11,5 @@ require (
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/xxtea/xxtea-go v0.0.0-20170828040851-35c4b17eecf6 // indirect
 	github.com/yang3yen/xxtea-go v1.0.2 // indirect
+	golang.org/x/image v0.0.0-20220617043117-41969df76e82 // indirect
 )

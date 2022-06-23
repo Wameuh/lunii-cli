@@ -2,33 +2,35 @@ package main
 
 import (
 	"fmt"
+	_ "image/jpeg"
+	_ "image/png"
+
+	//"image/draw"
 	"log"
 	"os"
 
-	"github.com/google/uuid"
+	lunii "github.com/olup/lunii-cli/pkg/lunii"
 	"github.com/urfave/cli/v2"
 )
 
-type Story struct {
-	uuid       uuid.UUID
-	folderName string
-}
-
 func main() {
-	pack, _ := ReadPack("reference/pack.zip")
+	// imgBin, _ := os.Open("./test/test.jpeg")
+	// defer imgBin.Close()
 
-	imageAssets := getImageAssetListFromPack(*pack)
-	soundAssets := getSoundAssetListFromPack(*pack)
-	listNodeIndex := getListNodeIndex(&pack.ListNodes)
+	// source, _, err := image.Decode(imgBin)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	// riBinary := cipherFirstBlockCommonKey(GenerateBinaryFromAssetIndex(&imageAssets))
-	// siBinary := cipherFirstBlockCommonKey(GenerateBinaryFromAssetIndex(&soundAssets))
-	// btBinary := cipherBlockSpecificKey(riBinary[:64])
-	// liBinary := cipherFirstBlockCommonKey(GenerateBinaryFromListNodeIndex(&listNodeIndex, &pack.StageNodes))
-	niBinary := generateNiBinary(pack, &pack.StageNodes, &listNodeIndex, &imageAssets, &soundAssets)
+	// // converting image to grayscale
+	// grayscale := image.NewGray(image.Rect(0, 0, 536, 354))
+	// draw.NearestNeighbor.Scale(grayscale, grayscale.Bounds(), source, source.Bounds(), draw.Over, nil)
 
-	logg("Ni Binary", niBinary)
+	// by := bmp.GetBitmap(grayscale)
 
+	// os.WriteFile("./test/compressed.bmp", by, 0777)
+
+	startCli()
 }
 
 func startCli() {
@@ -37,20 +39,20 @@ func startCli() {
 		Usage: "lunii cli",
 		Commands: []*cli.Command{
 			{
-				Name:    "device:infos",
+				Name:    "device-infos",
 				Aliases: []string{"d"},
 				Usage:   "Read global config",
 				Action: func(c *cli.Context) error {
-					fmt.Println(GetDeviceInfos())
+					fmt.Println(lunii.GetDevice())
 					return nil
 				},
 			},
 			{
-				Name:    "packs:list",
+				Name:    "list-packs",
 				Aliases: []string{"d"},
 				Usage:   "Read global config",
 				Action: func(c *cli.Context) error {
-					fmt.Println(readGlobalIndexFile())
+					fmt.Println(lunii.ReadGlobalIndexFile())
 					return nil
 				},
 			},

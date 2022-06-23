@@ -1,4 +1,4 @@
-package main
+package lunii
 
 import (
 	"archive/zip"

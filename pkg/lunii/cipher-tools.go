@@ -1,4 +1,4 @@
-package main
+package lunii
 
 import (
 	"encoding/binary"
@@ -63,7 +63,7 @@ func computeSpecificKeyFromUUID(uuid []byte) []byte {
 	return reorderedSpecificKey
 }
 func cipherBlockSpecificKey(data []byte) []byte {
-	device, _ := GetDeviceInfos()
+	device, _ := GetDevice()
 	dataInt := bytesToInt32(data, binary.LittleEndian)
 	keyInt := bytesToInt32(device.specificKey, binary.BigEndian)
 	encryptedIntData := Btea(dataInt, min(128, len(data)/4), keyInt)
