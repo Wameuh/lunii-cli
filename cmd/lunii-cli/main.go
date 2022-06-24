@@ -9,6 +9,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/fatih/color"
+	"github.com/gosuri/uitable"
 	lunii "github.com/olup/lunii-cli/pkg/lunii"
 	"github.com/urfave/cli/v2"
 )
@@ -39,21 +41,63 @@ func startCli() {
 		Usage: "lunii cli",
 		Commands: []*cli.Command{
 			{
-				Name:    "device-infos",
+				Name:    "device",
 				Aliases: []string{"d"},
 				Usage:   "Read global config",
-				Action: func(c *cli.Context) error {
-					fmt.Println(lunii.GetDevice())
-					return nil
-				},
-			},
+				Subcommands: []*cli.Command{
+					{
+						Name:    "infos",
+						Aliases: []string{"d"},
+						Usage:   "Read global config",
+						Action: func(c *cli.Context) error {
+							device, err := lunii.GetDevice()
+							if err != nil {
+								color.Red("No device found")
+								color.Yellow("Check if the device is plugged and mounted")
+								color.Yellow("Note: Devices version 1 are not supported by the CLI")
+								return err
+							}
+
+							table := uitable.New()
+							table.AddRow("S/N:", device.SerialNumber)
+							table.AddRow("Uuid (HEX)", device.UuidHex)
+							table.AddRow("Mountpoint:", device.MountPoint)
+							table.AddRow("Version:", string(device.FirmwareVersionMajor)+"."+string(device.FirmwareVersionMinor))
+							fmt.Println(table)
+							color.Green("This device is supported by this CLI")
+							return nil
+						},
+					},
+				}},
 			{
-				Name:    "list-packs",
+				Name:    "pack",
 				Aliases: []string{"d"},
 				Usage:   "Read global config",
-				Action: func(c *cli.Context) error {
-					fmt.Println(lunii.ReadGlobalIndexFile())
-					return nil
+				Subcommands: []*cli.Command{
+					{
+						Name:    "list",
+						Aliases: []string{"d"},
+						Usage:   "List installed packs on the device",
+						Action: func(c *cli.Context) error {
+							table := uitable.New()
+							table.AddRow("UUID", "TITLE")
+							table.AddRow("00000-00000-00000000-0000", "The title")
+							fmt.Println(table)
+							return nil
+						},
+					},
+					{
+						Name:    "remove",
+						Aliases: []string{"d"},
+						Usage:   "Remove one pack from device",
+						Action: func(c *cli.Context) error {
+							table := uitable.New()
+							table.AddRow("UUID", "TITLE")
+							table.AddRow("00000-00000-00000000-0000", "The title")
+							fmt.Println(table)
+							return nil
+						},
+					},
 				},
 			},
 		},
