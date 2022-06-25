@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -86,6 +87,7 @@ func GetDevice() (*Device, error) {
 
 	var long int64
 	binary.Read(reader, binary.BigEndian, &long)
+	device.SerialNumber = fmt.Sprintf("%014d", long)
 
 	skip(reader, 238)
 

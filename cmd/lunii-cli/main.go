@@ -16,6 +16,7 @@ import (
 )
 
 func main() {
+
 	// imgBin, _ := os.Open("./test/test.jpeg")
 	// defer imgBin.Close()
 
@@ -58,11 +59,12 @@ func startCli() {
 								return err
 							}
 
+							fmt.Println("Device infos")
+							fmt.Println("------------")
 							table := uitable.New()
 							table.AddRow("S/N:", device.SerialNumber)
-							table.AddRow("Uuid (HEX)", device.UuidHex)
 							table.AddRow("Mountpoint:", device.MountPoint)
-							table.AddRow("Version:", string(device.FirmwareVersionMajor)+"."+string(device.FirmwareVersionMinor))
+							table.AddRow("Version:", fmt.Sprint(device.FirmwareVersionMajor)+"."+fmt.Sprint(device.FirmwareVersionMinor))
 							fmt.Println(table)
 							color.Green("This device is supported by this CLI")
 							return nil
@@ -79,9 +81,21 @@ func startCli() {
 						Aliases: []string{"d"},
 						Usage:   "List installed packs on the device",
 						Action: func(c *cli.Context) error {
+							device, err := lunii.GetDevice()
+							if err != nil {
+								return err
+							}
+
+							packs, err := device.ReadGlobalIndexFile()
+							if err != nil {
+								return err
+							}
+
 							table := uitable.New()
-							table.AddRow("UUID", "TITLE")
-							table.AddRow("00000-00000-00000000-0000", "The title")
+							table.AddRow("REF", "UUID", "TITLE")
+							for _, pack := range packs {
+								table.AddRow(pack.FolderName, pack.Uuid.String(), pack.Title)
+							}
 							fmt.Println(table)
 							return nil
 						},
