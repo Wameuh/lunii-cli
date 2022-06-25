@@ -15,8 +15,9 @@ builds:
       - windows
       - darwin
 archives:
-  - replacements:
-      darwin: Darwin
+  - format: zip
+    replacements:
+      darwin: MacOS
       linux: Linux
       windows: Windows
       386: i386
