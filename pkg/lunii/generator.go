@@ -21,7 +21,7 @@ type ListNodeIndexed struct {
 	Node     ListNode
 }
 
-func getImageAssetListFromPack(archive Pack) []Asset {
+func getImageAssetListFromPack(archive StudioPack) []Asset {
 	var imageAssetsList []Asset
 	index := 0
 
@@ -41,7 +41,7 @@ func getImageAssetListFromPack(archive Pack) []Asset {
 	return imageAssetsList
 }
 
-func getSoundAssetListFromPack(archive Pack) []Asset {
+func getSoundAssetListFromPack(archive StudioPack) []Asset {
 	var soundAssetsList []Asset
 	index := 0
 
@@ -126,7 +126,7 @@ func GenerateBinaryFromListNodeIndex(nodes *[]ListNodeIndexed, stageNodes *[]Sta
 	return buf.Bytes()
 }
 
-func generateNiBinary(pack *Pack, stageNodes *[]StageNode, listNodeIndex *[]ListNodeIndexed, imageIndex *[]Asset, soundIndex *[]Asset) []byte {
+func generateNiBinary(pack *StudioPack, stageNodes *[]StageNode, listNodeIndex *[]ListNodeIndexed, imageIndex *[]Asset, soundIndex *[]Asset) []byte {
 	buf := new(bytes.Buffer)
 
 	// Nodes index file format version (1)

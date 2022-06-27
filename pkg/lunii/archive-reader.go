@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type Pack struct {
+type StudioPack struct {
 	PackType     string
 	OriginalPath string
 	Format       string      `json:"format"` // enum ?
@@ -19,6 +19,8 @@ type Pack struct {
 	Description  string      `json:"description"`
 	StageNodes   []StageNode `json:"stageNodes"`
 	ListNodes    []ListNode  `json:"actionNodes"`
+	Uuid         uuid.UUID
+	Ref          string
 }
 
 type StageNode struct {
@@ -52,7 +54,7 @@ type Transition struct {
 	OptionIndex int    `json:"optionIndex"`
 }
 
-func ReadPack(path string) (*Pack, error) {
+func ReadPack(path string) (*StudioPack, error) {
 	reader, err := zip.OpenReader(path)
 	if err != nil {
 		return nil, errors.New("package could not be found")
@@ -65,33 +67,13 @@ func ReadPack(path string) (*Pack, error) {
 	}
 	fileAsBytes, _ := ioutil.ReadAll(file)
 
-	var pack Pack
+	var pack StudioPack
 
 	pack.OriginalPath = path
 	json.Unmarshal(fileAsBytes, &pack)
 
+	pack.Uuid = pack.StageNodes[0].Uuid
+	pack.Ref = GetRefFromUUid(pack.Uuid)
+
 	return &pack, nil
-}
-
-func (pack *Pack) writeToDevice() error {
-
-	// get path from uuid
-	// create directory on device
-
-	// create image index - with exporter & lookup
-	// create sound index - with exporter & lookup
-
-	// write ni (index of stage nodes)
-	// write li (index of action nodes)
-
-	// write ri (index of image assets)
-	// write si (index of sound assets)
-
-	// copy images in rf
-	// soupy sounds in sf
-
-	// create boot file
-	// update .pi root file with uuid
-
-	return nil
 }

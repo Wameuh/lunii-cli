@@ -18,7 +18,7 @@ type PackMetadata struct {
 	Title      string
 }
 
-func GetFolderNameFromUUid(uuid uuid.UUID) string {
+func GetRefFromUUid(uuid uuid.UUID) string {
 	uuidString := uuid.String()
 	return strings.ToUpper(strings.ReplaceAll(uuidString[len(uuidString)-8:], "_", ""))
 }
@@ -62,7 +62,7 @@ func (*Device) ReadGlobalIndexFile() ([]PackMetadata, error) {
 		}
 		pack := PackMetadata{
 			Uuid:       uuid,
-			FolderName: GetFolderNameFromUUid(uuid),
+			FolderName: GetRefFromUUid(uuid),
 			Title:      storyTitle,
 		}
 		packs = append(packs, pack)
@@ -85,7 +85,7 @@ func (device *Device) AddPackToIndex(uuid uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-	stories = append(stories, PackMetadata{Uuid: uuid, FolderName: GetFolderNameFromUUid(uuid)})
+	stories = append(stories, PackMetadata{Uuid: uuid, FolderName: GetRefFromUUid(uuid)})
 	err = device.WriteGlobalIndexFile(stories)
 	return err
 }
@@ -101,6 +101,27 @@ func (device *Device) RemovePackFromIndex(uuid uuid.UUID) error {
 	// filter out the specified UUID
 	for _, story := range deviceStories {
 		if story.Uuid != uuid {
+			stories = append(stories, story)
+		}
+	}
+
+	err = device.WriteGlobalIndexFile(stories)
+
+	return err
+}
+
+func (device *Device) RemovePackFromIndexFromRef(ref string) error {
+	var stories []PackMetadata
+
+	deviceStories, err := device.ReadGlobalIndexFile()
+	if err != nil {
+		return err
+	}
+
+	// filter out the specified ref
+	for _, story := range deviceStories {
+		thisRef := GetRefFromUUid(story.Uuid)
+		if strings.ToLower(ref) != strings.ToLower(thisRef) {
 			stories = append(stories, story)
 		}
 	}
