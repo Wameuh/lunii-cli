@@ -1,10 +1,6 @@
 package main
 
 import (
-	_ "image/jpeg"
-	_ "image/png"
-
-	//"image/draw"
 	"log"
 	"os"
 
@@ -27,27 +23,33 @@ func startCli() {
 				Subcommands: []*cli.Command{
 					{
 						Name:    "infos",
-						Aliases: []string{"d"},
+						Aliases: []string{"i"},
 						Usage:   "Get general informations",
 						Action:  DisplayDeviceInfos,
 					},
 				}},
 			{
 				Name:    "pack",
-				Aliases: []string{"d"},
+				Aliases: []string{"p"},
 				Usage:   "Story packs",
 				Subcommands: []*cli.Command{
 					{
 						Name:    "list",
-						Aliases: []string{"d"},
+						Aliases: []string{"l"},
 						Usage:   "List installed packs on the device",
 						Action:  DisplayInstalledPacks,
 					},
 					{
 						Name:    "remove",
-						Aliases: []string{"d"},
+						Aliases: []string{"rm"},
 						Usage:   "Remove one pack from device",
 						Action:  RemovePack,
+					},
+					{
+						Name:    "import",
+						Aliases: []string{"i"},
+						Usage:   "Import a stusio pack",
+						Action:  ImportPack,
 					},
 				},
 			},

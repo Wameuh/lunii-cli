@@ -3,7 +3,6 @@ package lunii
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -75,7 +74,6 @@ func (*Device) WriteGlobalIndexFile(stories []PackMetadata) error {
 	for _, story := range stories {
 		buf = append(buf, story.Uuid[:]...)
 	}
-	fmt.Println(buf)
 	err := os.WriteFile(filepath.Join("/Volumes/lunii", ".pi"), buf, 0777)
 	return err
 }
@@ -85,6 +83,14 @@ func (device *Device) AddPackToIndex(uuid uuid.UUID) error {
 	if err != nil {
 		return err
 	}
+
+	// if the story is already in the index, exit
+	for _, story := range stories {
+		if story.Uuid == uuid {
+			return nil
+		}
+	}
+
 	stories = append(stories, PackMetadata{Uuid: uuid, FolderName: GetRefFromUUid(uuid)})
 	err = device.WriteGlobalIndexFile(stories)
 	return err

@@ -21,7 +21,7 @@ type ListNodeIndexed struct {
 	Node     ListNode
 }
 
-func getImageAssetListFromPack(archive StudioPack) []Asset {
+func GetImageAssetListFromPack(archive *StudioPack) *[]Asset {
 	var imageAssetsList []Asset
 	index := 0
 
@@ -38,10 +38,10 @@ func getImageAssetListFromPack(archive StudioPack) []Asset {
 		})
 		index++
 	}
-	return imageAssetsList
+	return &imageAssetsList
 }
 
-func getSoundAssetListFromPack(archive StudioPack) []Asset {
+func GetAudioAssetListFromPack(archive *StudioPack) *[]Asset {
 	var soundAssetsList []Asset
 	index := 0
 
@@ -58,7 +58,7 @@ func getSoundAssetListFromPack(archive StudioPack) []Asset {
 		})
 		index++
 	}
-	return soundAssetsList
+	return &soundAssetsList
 }
 
 func getAssetByName(name string, assets *[]Asset) *Asset {
@@ -88,7 +88,7 @@ func GenerateBinaryFromAssetIndex(assets *[]Asset) []byte {
 	return bin
 }
 
-func getListNodeIndex(listNodes *[]ListNode) []ListNodeIndexed {
+func GetListNodeIndex(listNodes *[]ListNode) *[]ListNodeIndexed {
 	var listNodeIndex []ListNodeIndexed
 	pos := 0
 	for i, node := range *listNodes {
@@ -100,10 +100,10 @@ func getListNodeIndex(listNodes *[]ListNode) []ListNodeIndexed {
 		})
 		pos += len(node.Options)
 	}
-	return listNodeIndex
+	return &listNodeIndex
 }
 
-func getLisNodeIndexedById(id string, nodes *[]ListNodeIndexed) *ListNodeIndexed {
+func GetLisNodeIndexedById(id string, nodes *[]ListNodeIndexed) *ListNodeIndexed {
 	for _, node := range *nodes {
 		if id == node.Node.Id {
 			return &node
@@ -112,7 +112,7 @@ func getLisNodeIndexedById(id string, nodes *[]ListNodeIndexed) *ListNodeIndexed
 	return nil
 }
 
-func GenerateBinaryFromListNodeIndex(nodes *[]ListNodeIndexed, stageNodes *[]StageNode) []byte {
+func generateLiBinary(nodes *[]ListNodeIndexed, stageNodes *[]StageNode) []byte {
 	buf := new(bytes.Buffer)
 	for _, node := range *nodes {
 		// for each node
@@ -126,7 +126,7 @@ func GenerateBinaryFromListNodeIndex(nodes *[]ListNodeIndexed, stageNodes *[]Sta
 	return buf.Bytes()
 }
 
-func generateNiBinary(pack *StudioPack, stageNodes *[]StageNode, listNodeIndex *[]ListNodeIndexed, imageIndex *[]Asset, soundIndex *[]Asset) []byte {
+func GenerateNiBinary(pack *StudioPack, stageNodes *[]StageNode, listNodeIndex *[]ListNodeIndexed, imageIndex *[]Asset, soundIndex *[]Asset) []byte {
 	buf := new(bytes.Buffer)
 
 	// Nodes index file format version (1)
@@ -167,16 +167,18 @@ func generateNiBinary(pack *StudioPack, stageNodes *[]StageNode, listNodeIndex *
 		binary.Write(buf, binary.LittleEndian, int32(getAssetByName(node.Audio, soundIndex).index))
 
 		// okTransition might be empty
+
 		okTransition := node.OkTransition
+
 		if okTransition == nil {
 			binary.Write(buf, binary.LittleEndian, int32(-1))
 			binary.Write(buf, binary.LittleEndian, int32(-1))
 			binary.Write(buf, binary.LittleEndian, int32(-1))
 		} else {
-			actionNode := getLisNodeIndexedById(okTransition.ActionNode, listNodeIndex)
-			binary.Write(buf, binary.LittleEndian, actionNode.Position)
-			binary.Write(buf, binary.LittleEndian, actionNode.Length)
-			binary.Write(buf, binary.LittleEndian, okTransition.OptionIndex)
+			actionNode := GetLisNodeIndexedById(okTransition.ActionNode, listNodeIndex)
+			binary.Write(buf, binary.LittleEndian, int32(actionNode.Position))
+			binary.Write(buf, binary.LittleEndian, int32(actionNode.Length))
+			binary.Write(buf, binary.LittleEndian, int32(okTransition.OptionIndex))
 		}
 
 		// hometransition might be empty
@@ -186,7 +188,7 @@ func generateNiBinary(pack *StudioPack, stageNodes *[]StageNode, listNodeIndex *
 			binary.Write(buf, binary.LittleEndian, int32(-1))
 			binary.Write(buf, binary.LittleEndian, int32(-1))
 		} else {
-			actionNode := getLisNodeIndexedById(homeTransition.ActionNode, listNodeIndex)
+			actionNode := GetLisNodeIndexedById(homeTransition.ActionNode, listNodeIndex)
 			binary.Write(buf, binary.LittleEndian, int32(actionNode.Position))
 			binary.Write(buf, binary.LittleEndian, int32(actionNode.Length))
 			binary.Write(buf, binary.LittleEndian, int32(homeTransition.OptionIndex))
@@ -203,4 +205,8 @@ func generateNiBinary(pack *StudioPack, stageNodes *[]StageNode, listNodeIndex *
 
 	return buf.Bytes()
 
+}
+
+func generateBtBinary(niBinary []byte) []byte {
+	return cipherBlockSpecificKey(niBinary[0:64])
 }
