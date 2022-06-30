@@ -2,13 +2,18 @@ name: Realease
 
 on:
   push:
-    tags:
-      - "*"
+    branches:
+      - main
+    # tags:
+    #   - "*"
 
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
+      - name: Install Lame
+        run: sudo apt-get install libmp3lame-dev
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
