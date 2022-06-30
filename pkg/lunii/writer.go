@@ -2,7 +2,6 @@ package lunii
 
 import (
 	"archive/zip"
-	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -74,6 +73,8 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 	defer reader.Close()
 
 	// copy images in rf
+	fmt.Println("Converting images ...")
+
 	deviceImageDirectory := filepath.Join(tempPath, "rf", "000")
 	os.MkdirAll(deviceImageDirectory, 0700)
 
@@ -94,6 +95,8 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 	}
 
 	// copy audios in sf
+	fmt.Println("Converting audios ...")
+
 	deviceAudioDirectory := filepath.Join(tempPath, "sf", "000")
 	os.MkdirAll(deviceAudioDirectory, 0700)
 
@@ -102,14 +105,14 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(audio.SourceName)
+
 		defer file.Close()
 		fileBytes, err := ioutil.ReadAll(file)
 		if err != nil {
 			return err
 		}
 
-		mp3, err := AudioToMp3(bytes.NewReader(fileBytes))
+		mp3, err := AudioToMp3(fileBytes)
 		if err != nil {
 			return err
 		}

@@ -11,12 +11,12 @@ import (
 	_ "image/png"
 
 	"github.com/olup/lunii-cli/pkg/bmp4"
+	"github.com/tosone/minimp3"
 	"golang.org/x/image/draw"
 
-	_ "github.com/qiniu/audio/mp3"
+	"github.com/qiniu/audio"
 	_ "github.com/qiniu/audio/ogg"
 	_ "github.com/qiniu/audio/wav"
-	"github.com/tosone/minimp3"
 	"github.com/viert/go-lame"
 )
 
@@ -48,26 +48,47 @@ func ImageToBmp4(file io.Reader) ([]byte, error) {
 	return bmp4.GetBitmap(grayscale), nil
 }
 
-func AudioToMp3(file io.ReadSeeker) ([]byte, error) {
+func AudioToMp3(fileBytes []byte) ([]byte, error) {
+	var audioBytes []byte
 
-	fileByte, _ := ioutil.ReadAll(file)
-	dec, audio, _ := minimp3.DecodeFull(fileByte)
+	// maybe mp3 ?
+	data, mp3Audio, err := minimp3.DecodeFull(fileBytes)
 
-	if dec.Channels == 1 && dec.SampleRate == 44100 {
-		fmt.Println("Proper mp3 format, no need to rencode")
-		return fileByte, nil
+	if err != nil {
+		// if ogg or wav
+		source, _, err := audio.Decode(bytes.NewReader(fileBytes))
+		if err != nil {
+			return nil, err
+		}
+		audioBytes, err = ioutil.ReadAll(source)
+		if err != nil {
+			return nil, err
+		}
 	}
+
+	// if data.Channels == 1 && data.SampleRate == 44100 {
+	// 	fmt.Println(len(fileBytes))
+	// 	fmt.Println("No conversion needed")
+	// 	return fileBytes, nil
+	// }
+
+	audioBytes = mp3Audio
 
 	output := new(bytes.Buffer)
 	enc := lame.NewEncoder(output)
 	defer enc.Close()
-	fmt.Println("one")
 
-	enc.SetMode(3)
-	fmt.Println("two")
+	if data.Channels == 1 {
+		enc.SetNumChannels(1)
+	}
 
-	enc.SetInSamplerate(44100)
-	enc.Write(audio)
+	enc.SetVBR(lame.VBRDefault)
+	enc.SetVBRQuality(4)
+	enc.SetQuality(4)
+	enc.SetMode(lame.MpegMono)
+	enc.SetWriteID3TagAutomatic(false)
+	enc.Write(audioBytes)
+	enc.Flush()
 
 	return output.Bytes(), nil
 
