@@ -1,0 +1,79 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+    # tags:
+    #   - "*"
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - run: Get-Location
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~\AppData\Local\go-build
+            ~\go\pkg\mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ">=1.18.0"
+
+      - name: Build
+        run: |
+          Set-Item -Path Env:CGO_LDFLAGS -Value "-LD:/a/lunii-tools/lunii-tools/bindings/windows/lib"
+          Set-Item -Path Env:CGO_CFLAGS -Value "-ID:/a/lunii-tools/lunii-tools/bindings/windows/include"
+          go build -o ./dist/ -ldflags "-v '-extldflags=-static -lm'" ./cmd/lunii-cli
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: lunii-cli-linux-windows.exe
+          path: dist/lunii-cli.exe
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - run: sudo apt install libmp3lame-dev
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ">=1.18.0"
+
+      - name: Build
+        run: |
+          CGO_LDFLAGS="-LD:/a/lunii-tools/lunii-tools/bindings/windows/lib"
+          CGO_CFLAGS="-ID:/a/lunii-tools/lunii-tools/bindings/windows/include"
+          go build -o ./dist/ -ldflags "-v '-extldflags=-static -lm'" ./cmd/lunii-cli
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: lunii-cli-linux-amd64
+          path: dist/lunii-cli

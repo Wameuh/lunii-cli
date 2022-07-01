@@ -54,8 +54,11 @@ func (*Device) ReadGlobalIndexFile() ([]PackMetadata, error) {
 			return nil, errors.New("There was an error getting UUID from the pack index file")
 		}
 
+		// Read md file
+
 		dbMetadata := luniiDb.GetStoryById(uuid)
 		storyTitle := "..."
+
 		if dbMetadata != nil {
 			storyTitle = dbMetadata.Title
 		}

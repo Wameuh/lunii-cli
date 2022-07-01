@@ -7,13 +7,29 @@ before:
     # you may remove this if you don't need go generate
     # - go generate ./...
 builds:
-  - main: ./cmd/lunii-cli
-    env:
-      - CGO_ENABLED=0
+  - id: darwin-amd64
+    main: ./cmd/lunii-cli
+    binary: golang-cross
     goos:
-      - linux
-      # - windows
       - darwin
+    goarch:
+      - arm64
+    env:
+      - PKG_CONFIG_SYSROOT_DIR=/bindings/lame
+      # - PKG_CONFIG_PATH=/sysroot/macos/amd64/usr/local/lib/pkgconfig
+      - CC=o64-clang
+      - CXX=o64-clang++
+    flags:
+      - -mod=readonly
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+  # - main: ./cmd/lunii-cli
+  #   env:
+  #     - CGO_ENABLED=0
+  #   goos:
+  #     - linux
+  #     - windows
+  #     - darwin
 archives:
   - format: zip
     replacements:

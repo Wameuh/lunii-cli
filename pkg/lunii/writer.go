@@ -9,7 +9,14 @@ import (
 	"path/filepath"
 
 	cp "github.com/otiai10/copy"
+	yaml "gopkg.in/yaml.v3"
 )
+
+type MetadatFile struct {
+	Title       string `yaml="title"`
+	Description string `yaml="title"`
+	ImageUrl    string `yaml="imge_url"`
+}
 
 func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 	// 1. Get path on devide
@@ -123,6 +130,23 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	// adding metadata
+	fmt.Println("Writing metadata...")
+	md := MetadatFile{
+		Title:       studioPack.Title,
+		Description: studioPack.Description,
+	}
+
+	yaml, err := yaml.Marshal(&md)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(filepath.Join(tempPath, "md"), yaml, 0777)
+	if err != nil {
+		return err
 	}
 
 	// copy temp to lunii
