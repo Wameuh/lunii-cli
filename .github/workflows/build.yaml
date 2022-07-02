@@ -36,12 +36,15 @@ jobs:
         run: |
           Set-Item -Path Env:CGO_LDFLAGS -Value "-LD:/a/lunii-tools/lunii-tools/bindings/windows/lib"
           Set-Item -Path Env:CGO_CFLAGS -Value "-ID:/a/lunii-tools/lunii-tools/bindings/windows/include"
-          go build -o ./dist/ -ldflags "-v '-extldflags=-static -lm'" ./cmd/lunii-cli
+          go build -o ./dist/lunii-cli-windows.exe -ldflags "-v '-extldflags=-static -lm'" ./cmd/lunii-cli
 
-      - uses: actions/upload-artifact@v3
+      - uses: ncipollo/release-action@v1
         with:
-          name: lunii-cli-linux-windows.exe
-          path: dist/lunii-cli.exe
+          allowUpdates: true
+          artifacts: "dist/lunii-cli-windows.exe"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: true
+          tag: 0.0.2
 
   build-linux:
     runs-on: ubuntu-latest
@@ -71,9 +74,12 @@ jobs:
         run: |
           CGO_LDFLAGS="-LD:/a/lunii-tools/lunii-tools/bindings/windows/lib"
           CGO_CFLAGS="-ID:/a/lunii-tools/lunii-tools/bindings/windows/include"
-          go build -o ./dist/ -ldflags "-v '-extldflags=-static -lm'" ./cmd/lunii-cli
+          go build -o ./dist/lunii-cli-linux -ldflags "-v '-extldflags=-static -lm'" ./cmd/lunii-cli
 
-      - uses: actions/upload-artifact@v3
+      - uses: ncipollo/release-action@v1
         with:
-          name: lunii-cli-linux-amd64
-          path: dist/lunii-cli
+          allowUpdates: true
+          artifacts: "dist/lunii-cli-linux"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: true
+          tag: 0.0.2

@@ -12,12 +12,6 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
-type MetadatFile struct {
-	Title       string `yaml="title"`
-	Description string `yaml="title"`
-	ImageUrl    string `yaml="imge_url"`
-}
-
 func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 	// 1. Get path on devide
 	rootPath := device.MountPoint
@@ -85,7 +79,7 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 	deviceImageDirectory := filepath.Join(tempPath, "rf", "000")
 	os.MkdirAll(deviceImageDirectory, 0700)
 
-	for _, image := range *imageIndex {
+	for i, image := range *imageIndex {
 		file, err := reader.Open("assets/" + image.SourceName)
 		if err != nil {
 			return err
@@ -95,7 +89,7 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 			return err
 		}
 		cypheredBmp := cipherFirstBlockCommonKey(bmpFile)
-		err = os.WriteFile(filepath.Join(deviceImageDirectory, image.DestinationName), cypheredBmp, 0777)
+		err = os.WriteFile(filepath.Join(deviceImageDirectory, assetDevicePathFromIndex(i)), cypheredBmp, 0777)
 		if err != nil {
 			return err
 		}
@@ -107,7 +101,7 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 	deviceAudioDirectory := filepath.Join(tempPath, "sf", "000")
 	os.MkdirAll(deviceAudioDirectory, 0700)
 
-	for _, audio := range *audioIndex {
+	for i, audio := range *audioIndex {
 		file, err := reader.Open("assets/" + audio.SourceName)
 		if err != nil {
 			return err
@@ -126,7 +120,7 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 
 		cypheredFile := cipherFirstBlockCommonKey(mp3)
 
-		err = os.WriteFile(filepath.Join(deviceAudioDirectory, audio.DestinationName), cypheredFile, 0777)
+		err = os.WriteFile(filepath.Join(deviceAudioDirectory, assetDevicePathFromIndex(i)), cypheredFile, 0777)
 		if err != nil {
 			return err
 		}
@@ -134,7 +128,7 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 
 	// adding metadata
 	fmt.Println("Writing metadata...")
-	md := MetadatFile{
+	md := Metadata{
 		Title:       studioPack.Title,
 		Description: studioPack.Description,
 	}

@@ -54,7 +54,8 @@ type Transition struct {
 	OptionIndex int    `json:"optionIndex"`
 }
 
-func ReadPack(path string) (*StudioPack, error) {
+func ReadStudioPack(path string) (*StudioPack, error) {
+
 	reader, err := zip.OpenReader(path)
 	if err != nil {
 		return nil, errors.New("package could not be found")

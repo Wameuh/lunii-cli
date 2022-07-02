@@ -9,9 +9,9 @@ import (
 )
 
 type Asset struct {
-	index           int
-	SourceName      string
-	DestinationName string
+	index      int
+	SourceName string
+	NodeUuid   uuid.UUID
 }
 
 type ListNodeIndexed struct {
@@ -32,9 +32,9 @@ func GetImageAssetListFromPack(archive *StudioPack) *[]Asset {
 		}
 
 		imageAssetsList = append(imageAssetsList, Asset{
-			index:           index,
-			SourceName:      imageAssetFileName,
-			DestinationName: fmt.Sprintf("%08d", index),
+			index:      index,
+			SourceName: imageAssetFileName,
+			NodeUuid:   archive.StageNodes[i].Uuid,
 		})
 		index++
 	}
@@ -52,9 +52,9 @@ func GetAudioAssetListFromPack(archive *StudioPack) *[]Asset {
 		}
 
 		soundAssetsList = append(soundAssetsList, Asset{
-			index:           index,
-			SourceName:      soundAssetFileName,
-			DestinationName: fmt.Sprintf("%08d", index),
+			index:      index,
+			SourceName: soundAssetFileName,
+			NodeUuid:   archive.StageNodes[i].Uuid,
 		})
 		index++
 	}
@@ -79,10 +79,14 @@ func getStageNodeIndexByUuid(uuid uuid.UUID, nodes *[]StageNode) int {
 	return -1
 }
 
+func assetDevicePathFromIndex(i int) string {
+	return "000\\" + fmt.Sprintf("%08d", i)
+}
+
 func GenerateBinaryFromAssetIndex(assets *[]Asset) []byte {
 	var bin []byte
-	for _, asset := range *assets {
-		path := "000\\" + asset.DestinationName
+	for i, _ := range *assets {
+		path := assetDevicePathFromIndex(i)
 		bin = append(bin, path...)
 	}
 	return bin

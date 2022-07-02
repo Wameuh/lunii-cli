@@ -13,7 +13,7 @@ func ImportPack(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	studioPack, err := lunii.ReadPack(path)
+	studioPack, err := lunii.ReadStudioPack(path)
 	if err != nil {
 		return err
 	}

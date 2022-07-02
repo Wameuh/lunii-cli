@@ -11,8 +11,9 @@ import (
 )
 
 type Story struct {
-	Title string    `json:"title"`
-	Uuid  uuid.UUID `json:"uuid"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Uuid        uuid.UUID `json:"uuid"`
 }
 
 type Db struct {

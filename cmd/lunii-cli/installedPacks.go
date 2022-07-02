@@ -14,7 +14,7 @@ func DisplayInstalledPacks(c *cli.Context) error {
 		return err
 	}
 
-	packs, err := device.ReadGlobalIndexFile()
+	packs, err := device.GetPacks()
 	if err != nil {
 		return err
 	}
@@ -22,7 +22,7 @@ func DisplayInstalledPacks(c *cli.Context) error {
 	table := uitable.New()
 	table.AddRow("REF", "UUID", "TITLE")
 	for _, pack := range packs {
-		table.AddRow(pack.FolderName, pack.Uuid.String(), pack.Title)
+		table.AddRow(pack.Ref, pack.Uuid.String(), pack.Title)
 	}
 	fmt.Println(table)
 	return nil

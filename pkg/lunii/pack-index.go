@@ -11,20 +11,13 @@ import (
 	"github.com/google/uuid"
 )
 
-type PackMetadata struct {
-	Uuid       uuid.UUID
-	FolderName string
-	Title      string
-}
-
 func GetRefFromUUid(uuid uuid.UUID) string {
 	uuidString := uuid.String()
 	return strings.ToUpper(strings.ReplaceAll(uuidString[len(uuidString)-8:], "_", ""))
 }
 
-func (*Device) ReadGlobalIndexFile() ([]PackMetadata, error) {
+func (*Device) ReadGlobalIndexFile() ([]uuid.UUID, error) {
 
-	packs := []PackMetadata{}
 	// read .pi file and get
 	data, err := os.Open("/Volumes/lunii/.pi")
 	if err != nil {
@@ -32,13 +25,13 @@ func (*Device) ReadGlobalIndexFile() ([]PackMetadata, error) {
 	}
 	defer data.Close()
 
-	luniiDb, err := GetMetadataDb()
 	if err != nil {
 		return nil, err
 	}
 
 	reader := bufio.NewReader(data)
 	slice := make([]byte, 16)
+	var ids []uuid.UUID
 
 	for {
 		_, err = reader.Read(slice)
@@ -53,54 +46,41 @@ func (*Device) ReadGlobalIndexFile() ([]PackMetadata, error) {
 		if err != nil {
 			return nil, errors.New("There was an error getting UUID from the pack index file")
 		}
-
-		// Read md file
-
-		dbMetadata := luniiDb.GetStoryById(uuid)
-		storyTitle := "..."
-
-		if dbMetadata != nil {
-			storyTitle = dbMetadata.Title
-		}
-		pack := PackMetadata{
-			Uuid:       uuid,
-			FolderName: GetRefFromUUid(uuid),
-			Title:      storyTitle,
-		}
-		packs = append(packs, pack)
+		ids = append(ids, uuid)
 	}
-	return packs, nil
+	return ids, nil
+
 }
 
-func (*Device) WriteGlobalIndexFile(stories []PackMetadata) error {
+func (*Device) WriteGlobalIndexFile(stories []uuid.UUID) error {
 	var buf []byte
-	for _, story := range stories {
-		buf = append(buf, story.Uuid[:]...)
+	for _, storyUuid := range stories {
+		buf = append(buf, storyUuid[:]...)
 	}
 	err := os.WriteFile(filepath.Join("/Volumes/lunii", ".pi"), buf, 0777)
 	return err
 }
 
 func (device *Device) AddPackToIndex(uuid uuid.UUID) error {
-	stories, err := device.ReadGlobalIndexFile()
+	uuids, err := device.ReadGlobalIndexFile()
 	if err != nil {
 		return err
 	}
 
 	// if the story is already in the index, exit
-	for _, story := range stories {
-		if story.Uuid == uuid {
+	for _, storyUuid := range uuids {
+		if storyUuid == uuid {
 			return nil
 		}
 	}
 
-	stories = append(stories, PackMetadata{Uuid: uuid, FolderName: GetRefFromUUid(uuid)})
-	err = device.WriteGlobalIndexFile(stories)
+	uuids = append(uuids, uuid)
+	err = device.WriteGlobalIndexFile(uuids)
 	return err
 }
 
-func (device *Device) RemovePackFromIndex(uuid uuid.UUID) error {
-	var stories []PackMetadata
+func (device *Device) RemovePackFromIndex(thisUuid uuid.UUID) error {
+	var uuids []uuid.UUID
 
 	deviceStories, err := device.ReadGlobalIndexFile()
 	if err != nil {
@@ -108,34 +88,35 @@ func (device *Device) RemovePackFromIndex(uuid uuid.UUID) error {
 	}
 
 	// filter out the specified UUID
-	for _, story := range deviceStories {
-		if story.Uuid != uuid {
-			stories = append(stories, story)
+	for _, storyUuid := range deviceStories {
+		if storyUuid != thisUuid {
+			uuids = append(uuids, storyUuid)
 		}
 	}
 
-	err = device.WriteGlobalIndexFile(stories)
+	err = device.WriteGlobalIndexFile(uuids)
 
 	return err
 }
 
 func (device *Device) RemovePackFromIndexFromRef(ref string) error {
-	var stories []PackMetadata
+	var newUuids []uuid.UUID
 
-	deviceStories, err := device.ReadGlobalIndexFile()
+	deviceUuids, err := device.ReadGlobalIndexFile()
+
 	if err != nil {
 		return err
 	}
 
 	// filter out the specified ref
-	for _, story := range deviceStories {
-		thisRef := GetRefFromUUid(story.Uuid)
+	for _, storyUuid := range deviceUuids {
+		thisRef := GetRefFromUUid(storyUuid)
 		if strings.ToLower(ref) != strings.ToLower(thisRef) {
-			stories = append(stories, story)
+			newUuids = append(newUuids, storyUuid)
 		}
 	}
 
-	err = device.WriteGlobalIndexFile(stories)
+	err = device.WriteGlobalIndexFile(newUuids)
 
 	return err
 }
