@@ -7,10 +7,13 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 
 	cp "github.com/otiai10/copy"
 	yaml "gopkg.in/yaml.v3"
 )
+
+var wg sync.WaitGroup
 
 func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 	// 1. Get path on devide
@@ -80,20 +83,11 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 	os.MkdirAll(deviceImageDirectory, 0700)
 
 	for i, image := range *imageIndex {
-		file, err := reader.Open("assets/" + image.SourceName)
-		if err != nil {
-			return err
-		}
-		bmpFile, err := ImageToBmp4(file)
-		if err != nil {
-			return err
-		}
-		cypheredBmp := cipherFirstBlockCommonKey(bmpFile)
-		err = os.WriteFile(filepath.Join(deviceImageDirectory, assetDevicePathFromIndex(i)), cypheredBmp, 0777)
-		if err != nil {
-			return err
-		}
+		wg.Add(1)
+		go convertAndWriteImage(*reader, deviceImageDirectory, image, i)
 	}
+
+	wg.Wait()
 
 	// copy audios in sf
 	fmt.Println("Converting audios ...")
@@ -102,33 +96,17 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 	os.MkdirAll(deviceAudioDirectory, 0700)
 
 	for i, audio := range *audioIndex {
-		file, err := reader.Open("assets/" + audio.SourceName)
-		if err != nil {
-			return err
-		}
-
-		defer file.Close()
-		fileBytes, err := ioutil.ReadAll(file)
-		if err != nil {
-			return err
-		}
-
-		mp3, err := AudioToMp3(fileBytes)
-		if err != nil {
-			return err
-		}
-
-		cypheredFile := cipherFirstBlockCommonKey(mp3)
-
-		err = os.WriteFile(filepath.Join(deviceAudioDirectory, assetDevicePathFromIndex(i)), cypheredFile, 0777)
-		if err != nil {
-			return err
-		}
+		wg.Add(1)
+		go convertAndWriteAudio(*reader, deviceAudioDirectory, audio, i)
 	}
+
+	wg.Wait()
 
 	// adding metadata
 	fmt.Println("Writing metadata...")
 	md := Metadata{
+		Uuid:        studioPack.Uuid,
+		Ref:         GetRefFromUUid(studioPack.Uuid),
 		Title:       studioPack.Title,
 		Description: studioPack.Description,
 	}
@@ -160,5 +138,53 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 	// 	return err
 	// }
 
+	return nil
+}
+
+func convertAndWriteAudio(reader zip.ReadCloser, deviceAudioDirectory string, audio Asset, index int) error {
+	defer wg.Done()
+
+	file, err := reader.Open("assets/" + audio.SourceName)
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+	fileBytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return err
+	}
+
+	mp3, err := AudioToMp3(fileBytes)
+	if err != nil {
+		return err
+	}
+
+	cypheredFile := cipherFirstBlockCommonKey(mp3)
+
+	err = os.WriteFile(filepath.Join(deviceAudioDirectory, assetDevicePathFromIndex(index)), cypheredFile, 0777)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func convertAndWriteImage(reader zip.ReadCloser, deviceImageDirectory string, image Asset, index int) error {
+	defer wg.Done()
+
+	file, err := reader.Open("assets/" + image.SourceName)
+	if err != nil {
+		return err
+	}
+	bmpFile, err := ImageToBmp4(file)
+	if err != nil {
+		return err
+	}
+	cypheredBmp := cipherFirstBlockCommonKey(bmpFile)
+	err = os.WriteFile(filepath.Join(deviceImageDirectory, assetDevicePathFromIndex(index)), cypheredBmp, 0777)
+	if err != nil {
+		return err
+	}
 	return nil
 }

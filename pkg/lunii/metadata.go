@@ -2,6 +2,7 @@ package lunii
 
 import (
 	"errors"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -23,11 +24,10 @@ func (device *Device) GetPacks() ([]Metadata, error) {
 	if err != nil {
 		return nil, err
 	}
-	luniiDb, _ := GetLuniiStoreDb()
 
 	for _, storyUuid := range uuids { // Read md file
 		metadata, _ := GetMetadataFromDevice(storyUuid, device)
-		if metadata == nil && luniiDb != nil {
+		if metadata == nil {
 			metadata, _ = GetMetadataFromDb(storyUuid)
 		}
 		if metadata == nil {
@@ -44,14 +44,15 @@ func (device *Device) GetPacks() ([]Metadata, error) {
 }
 
 func GetMetadataFromDevice(uuid uuid.UUID, device *Device) (*Metadata, error) {
-	path := filepath.Join(device.MountPoint, ".content", GetRefFromUUid(uuid))
-	metadataFile, err := os.ReadFile(path)
+	mdFilePath := filepath.Join(device.MountPoint, ".content", GetRefFromUUid(uuid), "md")
+	metadataFile, err := os.ReadFile(mdFilePath)
 	if err != nil {
 		return nil, err
 	}
-	var metadata Metadata
-	err = yaml.Unmarshal(metadataFile, metadata)
+	metadata := Metadata{}
+	err = yaml.Unmarshal(metadataFile, &metadata)
 	if err != nil {
+		log.Fatal(err)
 		return nil, err
 	}
 	return &metadata, nil

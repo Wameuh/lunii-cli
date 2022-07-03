@@ -1,0 +1,116 @@
+package studiopackbuilder
+
+import (
+	"os"
+	"path/filepath"
+
+	"github.com/google/uuid"
+	"github.com/olup/lunii-cli/pkg/lunii"
+)
+
+func GetTitleNode(directoryPath string) ([]lunii.StageNode, []lunii.ListNode, error) {
+
+	var stageNodes []lunii.StageNode
+	var listNodes []lunii.ListNode
+
+	// Create title node
+	nodeUuid := uuid.New()
+	titleNode := lunii.StageNode{
+		Uuid: nodeUuid,
+	}
+
+	// audio
+	audioPath := filepath.Join(directoryPath, "title.mp3")
+	_, err := os.Stat(audioPath)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	audioFileName := uuid.NewString() + ".mp3"
+	err = copy(audioPath, filepath.Join(tempOutputAssetPath, audioFileName))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	titleNode.Audio = audioFileName
+
+	// cover
+	imagePath := filepath.Join(directoryPath, "cover.png")
+	_, err = os.Stat(imagePath)
+	if err != nil {
+		return nil, err
+	}
+
+	imageFileName := uuid.NewString() + ".png"
+	copy(imagePath, filepath.Join(tempOutputAssetPath, imageFileName))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	titleNode.Image = imageFileName
+
+	// control settings for title node
+
+	titleNode.ControlSettings = &lunii.ControlSettings{
+		Wheel:    true,
+		Ok:       true,
+		Home:     true,
+		Pause:    false,
+		Autoplay: false,
+	}
+
+	// commit to stageNodes
+	stageNodes = append(stageNodes, &titleNode)
+
+	// Is there a story node or more title nodes ?
+	storyAudioPath := filepath.Join(directoryPath, "title.mp3")
+	_, err = os.Stat(audioPath)
+	if err == nil {
+		// We have a story node
+
+		// copy audio
+		audioFileName := uuid.NewString() + ".mp3"
+		err = copy(audioPath, filepath.Join(tempOutputAssetPath, audioFileName))
+		if err != nil {
+			return nil, err
+		}
+
+		// create ndoe
+		storyNode := lunii.StageNode{
+			Uuid:  uuid.New(),
+			Audio: audioFileName,
+		}
+
+		// create a list node
+		listNode := lunii.ListNode{
+			Id:      uuid.NewString(),
+			Name:    "",
+			Options: []uuid.UUID{storyNode.Uuid},
+		}
+
+		// add list node to title node
+		titleNode.OkTransition = &lunii.Transition{
+			ActionNode:  listNode.Id,
+			OptionIndex: 0,
+		}
+
+		titleNode.HomeTransition = &lunii.Transition{
+			ActionNode:  "", // TODO
+			OptionIndex: 0,
+		}
+
+		// finish
+		storyNode.ControlSettings = &lunii.ControlSettings{
+			Wheel:    false,
+			Ok:       false,
+			Home:     true,
+			Pause:    true,
+			Autoplay: true,
+		}
+
+		stageNodes = append(stageNodes, storyNode)
+		listNodes = append(listNodes, listNode)
+	}
+
+	return stageNodes, listNodes
+}
