@@ -85,7 +85,7 @@ func assetDevicePathFromIndex(i int) string {
 
 func GenerateBinaryFromAssetIndex(assets *[]Asset) []byte {
 	var bin []byte
-	for i, _ := range *assets {
+	for i := range *assets {
 		path := assetDevicePathFromIndex(i)
 		bin = append(bin, path...)
 	}

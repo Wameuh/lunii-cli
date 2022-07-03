@@ -11,10 +11,10 @@ import (
 )
 
 type Metadata struct {
-	Uuid        uuid.UUID `yaml:"uuid"`
-	Ref         string    `yaml:"ref"`
-	Title       string    `yaml:"title"`
-	Description string    `yaml:"description"`
+	Uuid        uuid.UUID `yaml:"uuid" json:"uuid"`
+	Ref         string    `yaml:"ref" json:"ref"`
+	Title       string    `yaml:"title" json:"title"`
+	Description string    `yaml:"description" json:"description"`
 }
 
 func (device *Device) GetPacks() ([]Metadata, error) {

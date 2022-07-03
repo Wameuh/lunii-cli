@@ -65,7 +65,7 @@ func computeSpecificKeyFromUUID(uuid []byte) []byte {
 func cipherBlockSpecificKey(data []byte) []byte {
 	device, _ := GetDevice()
 	dataInt := bytesToInt32(data, binary.LittleEndian)
-	keyInt := bytesToInt32(device.specificKey, binary.BigEndian)
+	keyInt := bytesToInt32(device.SpecificKey, binary.BigEndian)
 	encryptedIntData := Btea(dataInt, min(128, len(data)/4), keyInt)
 	return int32sToBytes(encryptedIntData, binary.LittleEndian)
 }

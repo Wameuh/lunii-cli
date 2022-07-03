@@ -16,15 +16,15 @@ import (
 )
 
 type Device struct {
-	MountPoint           string
-	Uuid                 []byte
-	UuidHex              string
-	specificKey          []byte
-	SerialNumber         string
-	FirmwareVersionMajor int16
-	FirmwareVersionMinor int16
-	SdCardSize           int
-	SdCardUsed           int
+	MountPoint           string `json:"mountPoint"`
+	Uuid                 []byte `json:"uuid"`
+	UuidHex              string `json:"uuidHex"`
+	SpecificKey          []byte `json:"specificKey"`
+	SerialNumber         string `json:"serialNumber"`
+	FirmwareVersionMajor int16  `json:"firmwareVersionMajor"`
+	FirmwareVersionMinor int16  `json:"firmwareVersionMinor"`
+	SdCardSize           int    `json:"sdCardSize"`
+	SdCardUsed           int    `json:"sdCardUsed"`
 }
 
 func skip(reader *bufio.Reader, count int64) {
@@ -96,7 +96,7 @@ func GetDevice() (*Device, error) {
 
 	device.Uuid = slice
 	device.UuidHex = hex.EncodeToString(slice)
-	device.specificKey = computeSpecificKeyFromUUID(slice)
+	device.SpecificKey = computeSpecificKeyFromUUID(slice)
 
 	return &device, nil
 }
