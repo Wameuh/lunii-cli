@@ -1,11 +1,9 @@
 package studiopackbuilder
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
-	"github.com/google/uuid"
 	"github.com/olup/lunii-cli/pkg/lunii"
 	"gopkg.in/yaml.v3"
 )
@@ -27,35 +25,30 @@ func buildStudioPack(directoryPath string, outputPath string) (*lunii.StudioPack
 	tempOutputAssetPath := filepath.Join(tempOutputPath, "assets")
 
 	err = os.MkdirAll(tempOutputPath, 0700)
+	if err != nil {
+		return nil, err
+	}
+
 	err = os.MkdirAll(tempOutputAssetPath, 0700)
 	if err != nil {
 		return nil, err
 	}
 
-	var nodeList []lunii.StageNode
-
 	// start node grabbing
-	GetTitleNode(directoryPath)
+	stageNodes, listNodes, err := GetTitleNode(directoryPath, tempOutputAssetPath)
+	if err != nil {
+		return nil, err
+	}
 
-	// todo complete pack
 	return &lunii.StudioPack{
 		Uuid:        metadata.Uuid,
 		Title:       metadata.Title,
+		Ref:         metadata.Ref,
 		Description: metadata.Description,
 
-		StageNodes: nodeList,
+		StageNodes: stageNodes,
+		ListNodes:  listNodes,
+		PackType:   "",
+		Version:    2,
 	}, nil
-}
-
-func copy(from string, to string) error {
-	input, err := ioutil.ReadFile(from)
-	if err != nil {
-		return err
-	}
-
-	err = ioutil.WriteFile(to, input, 0777)
-	if err != nil {
-		return err
-	}
-	return nil
 }

@@ -8,10 +8,7 @@ import (
 	"github.com/olup/lunii-cli/pkg/lunii"
 )
 
-func GetTitleNode(directoryPath string) ([]lunii.StageNode, []lunii.ListNode, error) {
-
-	var stageNodes []lunii.StageNode
-	var listNodes []lunii.ListNode
+func GetTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.StageNode, []lunii.ListNode, error) {
 
 	// Create title node
 	nodeUuid := uuid.New()
@@ -27,7 +24,7 @@ func GetTitleNode(directoryPath string) ([]lunii.StageNode, []lunii.ListNode, er
 	}
 
 	audioFileName := uuid.NewString() + ".mp3"
-	err = copy(audioPath, filepath.Join(tempOutputAssetPath, audioFileName))
+	err = CopyFile(audioPath, filepath.Join(tempOutputAssetPath, audioFileName))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -38,11 +35,11 @@ func GetTitleNode(directoryPath string) ([]lunii.StageNode, []lunii.ListNode, er
 	imagePath := filepath.Join(directoryPath, "cover.png")
 	_, err = os.Stat(imagePath)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	imageFileName := uuid.NewString() + ".png"
-	copy(imagePath, filepath.Join(tempOutputAssetPath, imageFileName))
+	CopyFile(imagePath, filepath.Join(tempOutputAssetPath, imageFileName))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -59,20 +56,17 @@ func GetTitleNode(directoryPath string) ([]lunii.StageNode, []lunii.ListNode, er
 		Autoplay: false,
 	}
 
-	// commit to stageNodes
-	stageNodes = append(stageNodes, &titleNode)
-
 	// Is there a story node or more title nodes ?
-	storyAudioPath := filepath.Join(directoryPath, "title.mp3")
-	_, err = os.Stat(audioPath)
+	storyAudioPath := filepath.Join(directoryPath, "story.mp3")
+	_, err = os.Stat(storyAudioPath)
 	if err == nil {
 		// We have a story node
 
 		// copy audio
 		audioFileName := uuid.NewString() + ".mp3"
-		err = copy(audioPath, filepath.Join(tempOutputAssetPath, audioFileName))
+		err = CopyFile(storyAudioPath, filepath.Join(tempOutputAssetPath, audioFileName))
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		// create ndoe
@@ -99,7 +93,7 @@ func GetTitleNode(directoryPath string) ([]lunii.StageNode, []lunii.ListNode, er
 			OptionIndex: 0,
 		}
 
-		// finish
+		// set story node control settings
 		storyNode.ControlSettings = &lunii.ControlSettings{
 			Wheel:    false,
 			Ok:       false,
@@ -108,9 +102,42 @@ func GetTitleNode(directoryPath string) ([]lunii.StageNode, []lunii.ListNode, er
 			Autoplay: true,
 		}
 
-		stageNodes = append(stageNodes, storyNode)
-		listNodes = append(listNodes, listNode)
+		// return nodes and lists
+		return []lunii.StageNode{titleNode, storyNode}, []lunii.ListNode{listNode}, nil
+	} else {
+		// There is no story node - it is a title node
+		stageNodes, listNodes, err := listNodesFomrDirectory(directoryPath, tempOutputAssetPath)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		stageNodes = append([]lunii.StageNode{titleNode}, stageNodes...)
+		return stageNodes, listNodes, nil
+	}
+}
+
+func listNodesFomrDirectory(directoryPath string, tempOutputPath string) ([]lunii.StageNode, []lunii.ListNode, error) {
+	var stageNodes []lunii.StageNode
+	var listNodes []lunii.ListNode
+
+	// read each files in directory
+	files, err := os.ReadDir(directoryPath)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return stageNodes, listNodes
+	// for each directory
+	for _, file := range files {
+		if !file.IsDir() {
+			continue
+		}
+		thisStageNodes, thisListNodes, err := GetTitleNode(filepath.Join(directoryPath, file.Name()), tempOutputPath)
+		if err != nil {
+			return nil, nil, err
+		}
+		stageNodes = append(stageNodes, thisStageNodes...)
+		listNodes = append(listNodes, thisListNodes...)
+	}
+
+	return stageNodes, listNodes, nil
 }
