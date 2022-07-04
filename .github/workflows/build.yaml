@@ -43,7 +43,7 @@ jobs:
           artifacts: "dist/lunii-cli-windows.exe"
           token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: true
-          tag: 0.0.2
+          tag: next
 
   build-linux:
     runs-on: ubuntu-latest
@@ -80,4 +80,47 @@ jobs:
           artifacts: "dist/lunii-cli-linux"
           token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: true
-          tag: 0.0.2
+          tag: next
+
+  build-macos-amd:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - run: brew install lame
+
+      # There must be a flag to load only the static lib
+      - name: Delete dynamic version of Lame
+        run: rm /usr/local/opt/lame/lib/libmp3lame.0.dylib
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ">=1.18.0"
+
+      - name: Build
+        run: |
+          go build -o ./dist/lunii-cli-macos-amd64 ./cmd/lunii-cli
+
+      - run: otool -L ./dist/lunii-cli-macos-amd64
+
+      - uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          replacesArtifacts: true
+          artifacts: "dist/lunii-cli-macos-amd64"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: true
+          tag: next
