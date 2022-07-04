@@ -2,14 +2,17 @@
 package studiopackbuilder
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/google/uuid"
 	"github.com/olup/lunii-cli/pkg/lunii"
 )
 
 func getTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.StageNode, []lunii.ListNode, error) {
+	fsys := os.DirFS(directoryPath)
 
 	// Create title node
 	nodeUuid := uuid.New()
@@ -20,13 +23,13 @@ func getTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.Sta
 	}
 
 	// audio
-	audioPath := filepath.Join(directoryPath, "title.mp3")
-	_, err := os.Stat(audioPath)
-	if err != nil {
-		return nil, nil, err
+	matches, err := doublestar.Glob(fsys, "title.{mp3,ogg,wav}")
+	if err != nil || len(matches) == 0 {
+		return nil, nil, errors.New("No title audio file found")
 	}
+	audioPath := filepath.Join(directoryPath, matches[0])
 
-	audioFileName := uuid.NewString() + ".mp3"
+	audioFileName := uuid.NewString() + filepath.Ext(audioPath)
 	err = copyFile(audioPath, filepath.Join(tempOutputAssetPath, audioFileName))
 	if err != nil {
 		return nil, nil, err
@@ -35,13 +38,13 @@ func getTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.Sta
 	titleNode.Audio = audioFileName
 
 	// cover
-	imagePath := filepath.Join(directoryPath, "cover.jpeg")
-	_, err = os.Stat(imagePath)
-	if err != nil {
-		return nil, nil, err
+	matches, err = doublestar.Glob(fsys, "cover.{jpg,jpeg,png}")
+	if err != nil || len(matches) == 0 {
+		return nil, nil, errors.New("No cover image file found")
 	}
+	imagePath := filepath.Join(directoryPath, matches[0])
 
-	imageFileName := uuid.NewString() + ".png"
+	imageFileName := uuid.NewString() + filepath.Ext(imagePath)
 	copyFile(imagePath, filepath.Join(tempOutputAssetPath, imageFileName))
 	if err != nil {
 		return nil, nil, err
@@ -62,10 +65,10 @@ func getTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.Sta
 	titleNode.HomeTransition = nil
 
 	// Is there a story node or more title nodes ?
-	storyAudioPath := filepath.Join(directoryPath, "story.mp3")
-	_, err = os.Stat(storyAudioPath)
-	if err == nil {
+	matches, err = doublestar.Glob(fsys, "story.{mp3,ogg,wav}")
+	if err == nil && len(matches) != 0 {
 		// We have a story node
+		storyAudioPath := filepath.Join(directoryPath, matches[0])
 
 		// copy audio
 		audioFileName := uuid.NewString() + ".mp3"

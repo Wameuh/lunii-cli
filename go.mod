@@ -20,6 +20,7 @@ require (
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/artdarek/go-unzip v1.0.0 // indirect
+	github.com/bmatcuk/doublestar/v4 v4.0.3 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
