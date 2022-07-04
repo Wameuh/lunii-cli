@@ -2,10 +2,13 @@
 
 A set of tools to manage the Lunii story player
 
-## CLI
+This repository offers a GO API as well as a friendly CLI
+
+## Features (API or CLI)
 - Detect device and write infos
-- List and manage installed packs
-- Side load community's pack (STudio zip format) (WIP)
+- List and delete installed packs
+- Side load community's pack (STudio zip format)
+- Convert SimplePacks to STUdio pack
 
 ## GUI
-Comming next
+You can also find this project's feature as a nice GUI in github.com/olup/lunii-cli
