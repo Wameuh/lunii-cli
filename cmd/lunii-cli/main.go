@@ -48,8 +48,24 @@ func startCli() {
 					{
 						Name:    "import",
 						Aliases: []string{"i"},
-						Usage:   "Import a stusio pack",
+						Usage:   "Import a studio pack",
 						Action:  ImportPack,
+					},
+					{
+						Name:    "create",
+						Aliases: []string{"c"},
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:  "directory",
+								Usage: "The structured directory of the story",
+							},
+							&cli.StringFlag{
+								Name:  "output",
+								Usage: "Output archive for the pack",
+							},
+						},
+						Usage:  "Create a studio pack from a structured directory",
+						Action: createPack,
 					},
 				},
 			},

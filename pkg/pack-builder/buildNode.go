@@ -1,3 +1,4 @@
+// TODO : returns
 package studiopackbuilder
 
 import (
@@ -8,12 +9,14 @@ import (
 	"github.com/olup/lunii-cli/pkg/lunii"
 )
 
-func GetTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.StageNode, []lunii.ListNode, error) {
+func getTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.StageNode, []lunii.ListNode, error) {
 
 	// Create title node
 	nodeUuid := uuid.New()
 	titleNode := lunii.StageNode{
 		Uuid: nodeUuid,
+		Name: filepath.Base(directoryPath) + "_title_node",
+		Type: "node",
 	}
 
 	// audio
@@ -24,7 +27,7 @@ func GetTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.Sta
 	}
 
 	audioFileName := uuid.NewString() + ".mp3"
-	err = CopyFile(audioPath, filepath.Join(tempOutputAssetPath, audioFileName))
+	err = copyFile(audioPath, filepath.Join(tempOutputAssetPath, audioFileName))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -32,14 +35,14 @@ func GetTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.Sta
 	titleNode.Audio = audioFileName
 
 	// cover
-	imagePath := filepath.Join(directoryPath, "cover.png")
+	imagePath := filepath.Join(directoryPath, "cover.jpeg")
 	_, err = os.Stat(imagePath)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	imageFileName := uuid.NewString() + ".png"
-	CopyFile(imagePath, filepath.Join(tempOutputAssetPath, imageFileName))
+	copyFile(imagePath, filepath.Join(tempOutputAssetPath, imageFileName))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -56,6 +59,8 @@ func GetTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.Sta
 		Autoplay: false,
 	}
 
+	titleNode.HomeTransition = nil
+
 	// Is there a story node or more title nodes ?
 	storyAudioPath := filepath.Join(directoryPath, "story.mp3")
 	_, err = os.Stat(storyAudioPath)
@@ -64,21 +69,23 @@ func GetTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.Sta
 
 		// copy audio
 		audioFileName := uuid.NewString() + ".mp3"
-		err = CopyFile(storyAudioPath, filepath.Join(tempOutputAssetPath, audioFileName))
+		err = copyFile(storyAudioPath, filepath.Join(tempOutputAssetPath, audioFileName))
 		if err != nil {
 			return nil, nil, err
 		}
 
-		// create ndoe
+		// create node
 		storyNode := lunii.StageNode{
 			Uuid:  uuid.New(),
+			Name:  filepath.Base(directoryPath) + "_story_node",
 			Audio: audioFileName,
+			Type:  "node",
 		}
 
 		// create a list node
 		listNode := lunii.ListNode{
 			Id:      uuid.NewString(),
-			Name:    "",
+			Name:    filepath.Base(directoryPath) + "_story_list_node",
 			Options: []uuid.UUID{storyNode.Uuid},
 		}
 
@@ -119,6 +126,10 @@ func GetTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.Sta
 func listNodesFomrDirectory(directoryPath string, tempOutputPath string) ([]lunii.StageNode, []lunii.ListNode, error) {
 	var stageNodes []lunii.StageNode
 	var listNodes []lunii.ListNode
+	thisListNode := lunii.ListNode{
+		Id:   uuid.NewString(),
+		Name: filepath.Base(directoryPath) + "_title_list_node",
+	}
 
 	// read each files in directory
 	files, err := os.ReadDir(directoryPath)
@@ -131,13 +142,18 @@ func listNodesFomrDirectory(directoryPath string, tempOutputPath string) ([]luni
 		if !file.IsDir() {
 			continue
 		}
-		thisStageNodes, thisListNodes, err := GetTitleNode(filepath.Join(directoryPath, file.Name()), tempOutputPath)
+		thisStageNodes, thisListNodes, err := getTitleNode(filepath.Join(directoryPath, file.Name()), tempOutputPath)
 		if err != nil {
 			return nil, nil, err
 		}
 		stageNodes = append(stageNodes, thisStageNodes...)
 		listNodes = append(listNodes, thisListNodes...)
+
+		// link top stage node in this list
+		thisListNode.Options = append(thisListNode.Options, stageNodes[0].Uuid)
 	}
 
-	return stageNodes, listNodes, nil
+	finalListNodes := append([]lunii.ListNode{thisListNode}, listNodes...)
+
+	return stageNodes, finalListNodes, nil
 }

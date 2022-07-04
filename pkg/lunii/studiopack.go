@@ -11,8 +11,8 @@ import (
 )
 
 type StudioPack struct {
-	PackType     string
-	OriginalPath string
+	PackType     string      `json:"_"`
+	OriginalPath string      `json:"_"`
 	Format       string      `json:"format"` // enum ?
 	Title        string      `json:"title"`
 	Version      int         `json:"version"` // enum ?
