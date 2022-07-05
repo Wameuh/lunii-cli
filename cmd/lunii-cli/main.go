@@ -46,10 +46,10 @@ func startCli() {
 						Action:  RemovePack,
 					},
 					{
-						Name:    "import",
+						Name:    "install",
 						Aliases: []string{"i"},
 						Usage:   "Import a studio pack",
-						Action:  ImportPack,
+						Action:  InstallPack,
 					},
 					{
 						Name:    "create",

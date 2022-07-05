@@ -79,14 +79,14 @@ func getStageNodeIndexByUuid(uuid uuid.UUID, nodes *[]StageNode) int {
 	return -1
 }
 
-func assetDevicePathFromIndex(i int) string {
-	return "000\\" + fmt.Sprintf("%08d", i)
+func intTo8Chars(i int) string {
+	return fmt.Sprintf("%08d", i)
 }
 
 func GenerateBinaryFromAssetIndex(assets *[]Asset) []byte {
 	var bin []byte
 	for i := range *assets {
-		path := assetDevicePathFromIndex(i)
+		path := "000\\" + intTo8Chars(i)
 		bin = append(bin, path...)
 	}
 	return bin
@@ -212,5 +212,6 @@ func GenerateNiBinary(pack *StudioPack, stageNodes *[]StageNode, listNodeIndex *
 }
 
 func generateBtBinary(niBinary []byte) []byte {
-	return cipherBlockSpecificKey(niBinary[0:64])
+	chunckSize := min(len(niBinary), 64)
+	return cipherBlockSpecificKey(niBinary[0:chunckSize])
 }

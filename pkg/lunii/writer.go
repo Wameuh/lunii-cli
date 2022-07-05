@@ -133,10 +133,7 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 	}
 
 	fmt.Println("Cleaning...")
-	// err = os.RemoveAll(tempPath)
-	// if err != nil {
-	// 	return err
-	// }
+	_ = os.RemoveAll(tempPath)
 
 	return nil
 }
@@ -162,7 +159,7 @@ func convertAndWriteAudio(reader zip.ReadCloser, deviceAudioDirectory string, au
 
 	cypheredFile := cipherFirstBlockCommonKey(mp3)
 
-	err = os.WriteFile(filepath.Join(deviceAudioDirectory, assetDevicePathFromIndex(index)), cypheredFile, 0777)
+	err = os.WriteFile(filepath.Join(deviceAudioDirectory, intTo8Chars(index)), cypheredFile, 0777)
 	if err != nil {
 		return err
 	}
@@ -182,7 +179,7 @@ func convertAndWriteImage(reader zip.ReadCloser, deviceImageDirectory string, im
 		return err
 	}
 	cypheredBmp := cipherFirstBlockCommonKey(bmpFile)
-	err = os.WriteFile(filepath.Join(deviceImageDirectory, assetDevicePathFromIndex(index)), cypheredBmp, 0777)
+	err = os.WriteFile(filepath.Join(deviceImageDirectory, intTo8Chars(index)), cypheredBmp, 0777)
 	if err != nil {
 		return err
 	}

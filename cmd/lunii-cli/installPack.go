@@ -6,7 +6,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func ImportPack(c *cli.Context) error {
+func InstallPack(c *cli.Context) error {
 	path := c.Args().Get(0)
 
 	device, err := lunii.GetDevice()

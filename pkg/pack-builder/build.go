@@ -2,6 +2,7 @@ package studiopackbuilder
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -78,10 +79,10 @@ func CreateStudioPack(directoryPath string, outputPath string) (*lunii.StudioPac
 	}
 
 	// clean
-	// err = os.RemoveAll(tempOutputPath)
-	// if err != nil {
-	// 	fmt.Println("Warning: Could not remove the temporary directory")
-	// }
+	err = os.RemoveAll(tempOutputPath)
+	if err != nil {
+		fmt.Println("Warning: Could not remove the temporary directory")
+	}
 
 	return studioPack, nil
 }

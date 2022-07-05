@@ -62,8 +62,6 @@ func getTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.Sta
 		Autoplay: false,
 	}
 
-	titleNode.HomeTransition = nil
-
 	// Is there a story node or more title nodes ?
 	matches, err = doublestar.Glob(fsys, "story.{mp3,ogg,wav}")
 	if err == nil && len(matches) != 0 {
@@ -98,10 +96,7 @@ func getTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.Sta
 			OptionIndex: 0,
 		}
 
-		titleNode.HomeTransition = &lunii.Transition{
-			ActionNode:  "", // TODO
-			OptionIndex: 0,
-		}
+		titleNode.HomeTransition = nil
 
 		// set story node control settings
 		storyNode.ControlSettings = &lunii.ControlSettings{
@@ -119,6 +114,11 @@ func getTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.Sta
 		stageNodes, listNodes, err := listNodesFomrDirectory(directoryPath, tempOutputAssetPath)
 		if err != nil {
 			return nil, nil, err
+		}
+
+		titleNode.OkTransition = &lunii.Transition{
+			OptionIndex: 0,
+			ActionNode:  listNodes[0].Id,
 		}
 
 		stageNodes = append([]lunii.StageNode{titleNode}, stageNodes...)
