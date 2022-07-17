@@ -23,4 +23,5 @@ reference
 
 dist/
 .notes
-.DS_Store
+**/.DS_Store
+.vscode

@@ -120,3 +120,30 @@ func (device *Device) RemovePackFromIndexFromRef(ref string) error {
 
 	return err
 }
+
+func insert(array []uuid.UUID, element uuid.UUID, i int) []uuid.UUID {
+	return append(array[:i], append([]uuid.UUID{element}, array[i:]...)...)
+}
+
+func (device *Device) ReIndexPack(thisUuid uuid.UUID, index int) error {
+	var newStoriesUuids []uuid.UUID
+
+	deviceStoriesUuids, err := device.ReadGlobalIndexFile()
+	if err != nil {
+		return err
+	}
+
+	// filter out the specified UUID
+	for _, storyUuid := range deviceStoriesUuids {
+		if storyUuid != thisUuid {
+			newStoriesUuids = append(newStoriesUuids, storyUuid)
+		}
+	}
+
+	// re-add the specified uuid to the proper index
+	newStoriesUuids = insert(newStoriesUuids, thisUuid, index)
+
+	err = device.WriteGlobalIndexFile(newStoriesUuids)
+
+	return err
+}
