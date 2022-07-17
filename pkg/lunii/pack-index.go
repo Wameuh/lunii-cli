@@ -125,7 +125,7 @@ func insert(array []uuid.UUID, element uuid.UUID, i int) []uuid.UUID {
 	return append(array[:i], append([]uuid.UUID{element}, array[i:]...)...)
 }
 
-func (device *Device) ReIndexPack(thisUuid uuid.UUID, index int) error {
+func (device *Device) ChangePackOrder(thisUuid uuid.UUID, index int) error {
 	var newStoriesUuids []uuid.UUID
 
 	deviceStoriesUuids, err := device.ReadGlobalIndexFile()
