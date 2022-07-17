@@ -121,6 +121,7 @@ func (device *Device) RemovePackFromIndexFromRef(ref string) error {
 	return err
 }
 
+// insert
 func insert(array []uuid.UUID, element uuid.UUID, i int) []uuid.UUID {
 	return append(array[:i], append([]uuid.UUID{element}, array[i:]...)...)
 }
