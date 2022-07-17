@@ -16,10 +16,10 @@ func GetRefFromUUid(uuid uuid.UUID) string {
 	return strings.ToUpper(strings.ReplaceAll(uuidString[len(uuidString)-8:], "_", ""))
 }
 
-func (*Device) ReadGlobalIndexFile() ([]uuid.UUID, error) {
+func (device *Device) ReadGlobalIndexFile() ([]uuid.UUID, error) {
 
 	// read .pi file and get
-	data, err := os.Open("/Volumes/lunii/.pi")
+	data, err := os.Open(filepath.Join(device.MountPoint, ".pi"))
 	if err != nil {
 		return nil, errors.New("Could not reach the pack index file")
 	}
@@ -52,12 +52,12 @@ func (*Device) ReadGlobalIndexFile() ([]uuid.UUID, error) {
 
 }
 
-func (*Device) WriteGlobalIndexFile(stories []uuid.UUID) error {
+func (device *Device) WriteGlobalIndexFile(stories []uuid.UUID) error {
 	var buf []byte
 	for _, storyUuid := range stories {
 		buf = append(buf, storyUuid[:]...)
 	}
-	err := os.WriteFile(filepath.Join("/Volumes/lunii", ".pi"), buf, 0777)
+	err := os.WriteFile(filepath.Join(device.MountPoint, ".pi"), buf, 0777)
 	return err
 }
 
