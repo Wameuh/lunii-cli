@@ -99,33 +99,6 @@ func (device *Device) RemovePackFromIndex(thisUuid uuid.UUID) error {
 	return err
 }
 
-func (device *Device) RemovePackFromIndexFromRef(ref string) error {
-	var newUuids []uuid.UUID
-
-	deviceUuids, err := device.ReadGlobalIndexFile()
-
-	if err != nil {
-		return err
-	}
-
-	// filter out the specified ref
-	for _, storyUuid := range deviceUuids {
-		thisRef := GetRefFromUUid(storyUuid)
-		if strings.ToLower(ref) != strings.ToLower(thisRef) {
-			newUuids = append(newUuids, storyUuid)
-		}
-	}
-
-	err = device.WriteGlobalIndexFile(newUuids)
-
-	return err
-}
-
-// insert
-func insert(array []uuid.UUID, element uuid.UUID, i int) []uuid.UUID {
-	return append(array[:i], append([]uuid.UUID{element}, array[i:]...)...)
-}
-
 func (device *Device) ChangePackOrder(thisUuid uuid.UUID, index int) error {
 	var newStoriesUuids []uuid.UUID
 

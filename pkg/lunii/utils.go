@@ -10,6 +10,7 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 
+	"github.com/google/uuid"
 	"github.com/olup/lunii-cli/pkg/bmp4"
 	"github.com/tosone/minimp3"
 	"golang.org/x/image/draw"
@@ -92,4 +93,8 @@ func AudioToMp3(fileBytes []byte) ([]byte, error) {
 
 	return output.Bytes(), nil
 
+}
+
+func insert(array []uuid.UUID, element uuid.UUID, i int) []uuid.UUID {
+	return append(array[:i], append([]uuid.UUID{element}, array[i:]...)...)
 }
