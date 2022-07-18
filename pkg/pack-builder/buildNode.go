@@ -153,7 +153,7 @@ func listNodesFomrDirectory(directoryPath string, tempOutputPath string) ([]luni
 		listNodes = append(listNodes, thisListNodes...)
 
 		// link top stage node in this list
-		thisListNode.Options = append(thisListNode.Options, stageNodes[0].Uuid)
+		thisListNode.Options = append(thisListNode.Options, thisStageNodes[0].Uuid)
 	}
 
 	finalListNodes := append([]lunii.ListNode{thisListNode}, listNodes...)
