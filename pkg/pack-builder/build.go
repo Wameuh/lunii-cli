@@ -40,7 +40,7 @@ func CreateStudioPack(directoryPath string, outputPath string) (*lunii.StudioPac
 	}
 
 	// start node grabbing
-	stageNodes, listNodes, err := getTitleNode(directoryPath, tempOutputAssetPath)
+	stageNodes, listNodes, err := getTitleNode(nil, directoryPath, tempOutputAssetPath)
 	if err != nil {
 		return nil, err
 	}

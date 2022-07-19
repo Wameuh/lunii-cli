@@ -11,7 +11,12 @@ import (
 	"github.com/olup/lunii-cli/pkg/lunii"
 )
 
-func getTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.StageNode, []lunii.ListNode, error) {
+type NodeContext struct {
+	uuid  string
+	index int
+}
+
+func getTitleNode(ctx *NodeContext, directoryPath string, tempOutputAssetPath string) ([]lunii.StageNode, []lunii.ListNode, error) {
 	fsys := os.DirFS(directoryPath)
 
 	// Create title node
@@ -83,6 +88,12 @@ func getTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.Sta
 			Type:  "node",
 		}
 
+		// if there is a context, attach home and ok transition to it
+		if ctx != nil {
+			storyNode.HomeTransition = &lunii.Transition{ActionNode: ctx.uuid, OptionIndex: ctx.index}
+			storyNode.OkTransition = &lunii.Transition{ActionNode: ctx.uuid, OptionIndex: ctx.index}
+		}
+
 		// create a list node
 		listNode := lunii.ListNode{
 			Id:      uuid.NewString(),
@@ -111,7 +122,7 @@ func getTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.Sta
 		return []lunii.StageNode{titleNode, storyNode}, []lunii.ListNode{listNode}, nil
 	} else {
 		// There is no story node - it is a title node
-		stageNodes, listNodes, err := listNodesFomrDirectory(directoryPath, tempOutputAssetPath)
+		stageNodes, listNodes, err := listNodesFromDirectory(directoryPath, tempOutputAssetPath)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -126,7 +137,7 @@ func getTitleNode(directoryPath string, tempOutputAssetPath string) ([]lunii.Sta
 	}
 }
 
-func listNodesFomrDirectory(directoryPath string, tempOutputPath string) ([]lunii.StageNode, []lunii.ListNode, error) {
+func listNodesFromDirectory(directoryPath string, tempOutputPath string) ([]lunii.StageNode, []lunii.ListNode, error) {
 	var stageNodes []lunii.StageNode
 	var listNodes []lunii.ListNode
 	thisListNode := lunii.ListNode{
@@ -145,7 +156,8 @@ func listNodesFomrDirectory(directoryPath string, tempOutputPath string) ([]luni
 		if !file.IsDir() {
 			continue
 		}
-		thisStageNodes, thisListNodes, err := getTitleNode(filepath.Join(directoryPath, file.Name()), tempOutputPath)
+		ctx := NodeContext{uuid: thisListNode.Id, index: len(thisListNode.Options)}
+		thisStageNodes, thisListNodes, err := getTitleNode(&ctx, filepath.Join(directoryPath, file.Name()), tempOutputPath)
 		if err != nil {
 			return nil, nil, err
 		}
