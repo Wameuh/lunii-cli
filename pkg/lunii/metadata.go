@@ -15,7 +15,8 @@ type Metadata struct {
 	Ref            string    `yaml:"ref" json:"ref"`
 	Title          string    `yaml:"title" json:"title"`
 	Description    string    `yaml:"description" json:"description"`
-	IsOfficialPack bool      `yaml:"_" json:"_"`
+	IsOfficialPack bool      `yaml:"-" json:"isOfficialPack"`
+	IsUnknown      bool      `yaml:"-" json:"isUnknown"`
 }
 
 func (device *Device) GetPacks() ([]Metadata, error) {
@@ -38,6 +39,7 @@ func (device *Device) GetPacks() ([]Metadata, error) {
 				Title:          "",
 				Description:    "",
 				IsOfficialPack: false,
+				IsUnknown:      true,
 			}
 		}
 		packs = append(packs, *metadata)
@@ -79,5 +81,6 @@ func GetMetadataFromDb(uuid uuid.UUID) (*Metadata, error) {
 		Title:          story.Title,
 		Description:    story.Description,
 		IsOfficialPack: true,
+		IsUnknown:      false,
 	}, nil
 }
