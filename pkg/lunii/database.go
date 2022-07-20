@@ -72,8 +72,8 @@ func GetMetadataDb() (*Db, error) {
 			return err
 		}
 
-		title, _ := jsonparser.GetString(value, "localized_infos.fr_FR.title")
-		description, _ := jsonparser.GetString(value, "localized_infos.fr_FR.description")
+		title, _ := jsonparser.GetString(value, "localized_infos", "fr_FR", "title")
+		description, _ := jsonparser.GetString(value, "localized_infos", "fr_FR", "description")
 
 		db.stories = append(db.stories, Story{Uuid: uuid.MustParse(storyUuid), Title: title, Description: description})
 		return nil
