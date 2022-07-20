@@ -11,10 +11,11 @@ import (
 )
 
 type Metadata struct {
-	Uuid        uuid.UUID `yaml:"uuid" json:"uuid"`
-	Ref         string    `yaml:"ref" json:"ref"`
-	Title       string    `yaml:"title" json:"title"`
-	Description string    `yaml:"description" json:"description"`
+	Uuid           uuid.UUID `yaml:"uuid" json:"uuid"`
+	Ref            string    `yaml:"ref" json:"ref"`
+	Title          string    `yaml:"title" json:"title"`
+	Description    string    `yaml:"description" json:"description"`
+	IsOfficialPack bool      `yaml:"_" json:"_"`
 }
 
 func (device *Device) GetPacks() ([]Metadata, error) {
@@ -32,10 +33,11 @@ func (device *Device) GetPacks() ([]Metadata, error) {
 		}
 		if metadata == nil {
 			metadata = &Metadata{
-				Uuid:        storyUuid,
-				Ref:         GetRefFromUUid(storyUuid),
-				Title:       "",
-				Description: "",
+				Uuid:           storyUuid,
+				Ref:            GetRefFromUUid(storyUuid),
+				Title:          "",
+				Description:    "",
+				IsOfficialPack: false,
 			}
 		}
 		packs = append(packs, *metadata)
@@ -55,6 +57,8 @@ func GetMetadataFromDevice(uuid uuid.UUID, device *Device) (*Metadata, error) {
 		log.Fatal(err)
 		return nil, err
 	}
+
+	metadata.IsOfficialPack = false
 	return &metadata, nil
 }
 
@@ -70,9 +74,10 @@ func GetMetadataFromDb(uuid uuid.UUID) (*Metadata, error) {
 	}
 
 	return &Metadata{
-		Uuid:        uuid,
-		Ref:         GetRefFromUUid(uuid),
-		Title:       story.Title,
-		Description: story.Description,
+		Uuid:           uuid,
+		Ref:            GetRefFromUUid(uuid),
+		Title:          story.Title,
+		Description:    story.Description,
+		IsOfficialPack: true,
 	}, nil
 }
