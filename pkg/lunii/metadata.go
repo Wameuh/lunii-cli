@@ -11,12 +11,11 @@ import (
 )
 
 type Metadata struct {
-	Uuid           uuid.UUID `yaml:"uuid" json:"uuid"`
-	Ref            string    `yaml:"ref" json:"ref"`
-	Title          string    `yaml:"title" json:"title"`
-	Description    string    `yaml:"description" json:"description"`
-	IsOfficialPack bool      `yaml:"-" json:"isOfficialPack"`
-	IsUnknown      bool      `yaml:"-" json:"isUnknown"`
+	Uuid        uuid.UUID `yaml:"uuid" json:"uuid"`
+	Ref         string    `yaml:"ref" json:"ref"`
+	Title       string    `yaml:"title" json:"title"`
+	Description string    `yaml:"description" json:"description"`
+	PackType    string    `yaml:"packType" json:"packType"`
 }
 
 func (device *Device) GetPacks() ([]Metadata, error) {
@@ -30,16 +29,18 @@ func (device *Device) GetPacks() ([]Metadata, error) {
 	for _, storyUuid := range uuids { // Read md file
 		metadata, _ := GetMetadataFromDevice(storyUuid, device)
 		if metadata == nil {
-			metadata, _ = GetMetadataFromDb(storyUuid)
+			metadata, _ = GetMetadataFromLuniiDb(storyUuid)
+		}
+		if metadata == nil {
+			metadata, _ = GetMetadataFromStudioDb(storyUuid)
 		}
 		if metadata == nil {
 			metadata = &Metadata{
-				Uuid:           storyUuid,
-				Ref:            GetRefFromUUid(storyUuid),
-				Title:          "",
-				Description:    "",
-				IsOfficialPack: false,
-				IsUnknown:      true,
+				Uuid:        storyUuid,
+				Ref:         GetRefFromUUid(storyUuid),
+				Title:       "",
+				Description: "",
+				PackType:    "undefined",
 			}
 		}
 		packs = append(packs, *metadata)
@@ -60,12 +61,12 @@ func GetMetadataFromDevice(uuid uuid.UUID, device *Device) (*Metadata, error) {
 		return nil, err
 	}
 
-	metadata.IsOfficialPack = false
+	metadata.PackType = "custom"
 	return &metadata, nil
 }
 
-func GetMetadataFromDb(uuid uuid.UUID) (*Metadata, error) {
-	luniiDb, err := GetMetadataDb()
+func GetMetadataFromLuniiDb(uuid uuid.UUID) (*Metadata, error) {
+	luniiDb, err := GetLuniiMetadataDb()
 	if err != nil {
 		return nil, err
 	}
@@ -76,11 +77,30 @@ func GetMetadataFromDb(uuid uuid.UUID) (*Metadata, error) {
 	}
 
 	return &Metadata{
-		Uuid:           uuid,
-		Ref:            GetRefFromUUid(uuid),
-		Title:          story.Title,
-		Description:    story.Description,
-		IsOfficialPack: true,
-		IsUnknown:      false,
+		Uuid:        uuid,
+		Ref:         GetRefFromUUid(uuid),
+		Title:       story.Title,
+		Description: story.Description,
+		PackType:    "official",
+	}, nil
+}
+
+func GetMetadataFromStudioDb(uuid uuid.UUID) (*Metadata, error) {
+	studioDb, err := GetLStudioMetadataDb()
+	if err != nil {
+		return nil, err
+	}
+	story := studioDb.GetStoryById(uuid)
+
+	if story == nil {
+		return nil, errors.New("Could not found this uuid in DB")
+	}
+
+	return &Metadata{
+		Uuid:        uuid,
+		Ref:         GetRefFromUUid(uuid),
+		Title:       story.Title,
+		Description: story.Description,
+		PackType:    "custom",
 	}, nil
 }
