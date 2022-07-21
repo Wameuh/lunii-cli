@@ -15,7 +15,8 @@ type Metadata struct {
 	Ref         string    `yaml:"ref" json:"ref"`
 	Title       string    `yaml:"title" json:"title"`
 	Description string    `yaml:"description" json:"description"`
-	PackType    string    `yaml:"packType" json:"packType"`
+	// undefined or lunii or custom
+	PackOrigin string `yaml:"packType" json:"packType"`
 }
 
 func (device *Device) GetPacks() ([]Metadata, error) {
@@ -40,7 +41,7 @@ func (device *Device) GetPacks() ([]Metadata, error) {
 				Ref:         GetRefFromUUid(storyUuid),
 				Title:       "",
 				Description: "",
-				PackType:    "undefined",
+				PackOrigin:  "undefined",
 			}
 		}
 		packs = append(packs, *metadata)
@@ -61,7 +62,7 @@ func GetMetadataFromDevice(uuid uuid.UUID, device *Device) (*Metadata, error) {
 		return nil, err
 	}
 
-	metadata.PackType = "custom"
+	metadata.PackOrigin = "custom"
 	return &metadata, nil
 }
 
@@ -81,7 +82,7 @@ func GetMetadataFromLuniiDb(uuid uuid.UUID) (*Metadata, error) {
 		Ref:         GetRefFromUUid(uuid),
 		Title:       story.Title,
 		Description: story.Description,
-		PackType:    "official",
+		PackOrigin:  "lunii",
 	}, nil
 }
 
@@ -101,6 +102,6 @@ func GetMetadataFromStudioDb(uuid uuid.UUID) (*Metadata, error) {
 		Ref:         GetRefFromUUid(uuid),
 		Title:       story.Title,
 		Description: story.Description,
-		PackType:    "custom",
+		PackOrigin:  "custom",
 	}, nil
 }
