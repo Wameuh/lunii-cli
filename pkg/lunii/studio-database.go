@@ -15,7 +15,7 @@ func getStudioDbPath() string {
 	return filepath.Join(dirname, ".studio", "db", "unofficial.json")
 }
 
-func GetLStudioMetadataDb(dbPath string) (*Db, error) {
+func GetStudioMetadataDb(dbPath string) (*Db, error) {
 	// Return DB if in cache
 	if studioDb != nil {
 		return studioDb, nil
