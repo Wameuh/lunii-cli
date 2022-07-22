@@ -49,7 +49,7 @@ func GetStudioMetadataDb(dbPath string) (*Db, error) {
 		studioDb.stories = append(studioDb.stories, Story{
 			Uuid:  uuid.MustParse(storyUuid),
 			Title: title, Description: description,
-			Origin: "studio",
+			PackType: "custom",
 		})
 		return nil
 	}, "response")

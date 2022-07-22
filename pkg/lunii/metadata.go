@@ -15,8 +15,8 @@ type Metadata struct {
 	Ref         string    `yaml:"ref" json:"ref"`
 	Title       string    `yaml:"title" json:"title"`
 	Description string    `yaml:"description" json:"description"`
-	// undefined or lunii or studio or cutsom
-	Origin string `yaml:"packType" json:"packType"`
+	// undefined or lunii or custom
+	PackType string `yaml:"packType" json:"packType"`
 }
 
 func (device *Device) GetPacks() ([]Metadata, error) {
@@ -35,7 +35,7 @@ func (device *Device) GetPacks() ([]Metadata, error) {
 				Ref:         GetRefFromUUid(storyUuid),
 				Title:       "",
 				Description: "",
-				Origin:      "undefined",
+				PackType:    "undefined",
 			}
 		}
 		packs = append(packs, *metadata)
@@ -55,7 +55,6 @@ func (device *Device) GetPacksMetadata(uuid uuid.UUID) (*Metadata, error) {
 		log.Fatal(err)
 		return nil, err
 	}
-	metadata.Origin = "custom"
 	return &metadata, nil
 }
 
@@ -71,7 +70,7 @@ func (device *Device) SyncMetadataFromDb(uuid uuid.UUID, db *Db) error {
 		Ref:         GetRefFromUUid(uuid),
 		Title:       story.Title,
 		Description: story.Description,
-		Origin:      story.Origin,
+		PackType:    story.PackType,
 	}
 
 	mdYaml, err := yaml.Marshal(&md)

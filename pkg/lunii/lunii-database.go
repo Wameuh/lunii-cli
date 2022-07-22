@@ -71,7 +71,7 @@ func GetLuniiMetadataDb() (*Db, error) {
 				Uuid:        uuid.MustParse(storyUuid),
 				Title:       title,
 				Description: description,
-				Origin:      "lunii",
+				PackType:    "lunii",
 			})
 		return nil
 	}, "response")

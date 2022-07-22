@@ -109,6 +109,7 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 		Ref:         GetRefFromUUid(studioPack.Uuid),
 		Title:       studioPack.Title,
 		Description: studioPack.Description,
+		PackType:    "cutom",
 	}
 
 	yaml, err := yaml.Marshal(&md)
