@@ -8,6 +8,7 @@ type Story struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Uuid        uuid.UUID `json:"uuid"`
+	Origin      string
 }
 
 type Db struct {

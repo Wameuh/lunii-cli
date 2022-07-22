@@ -65,7 +65,14 @@ func GetLuniiMetadataDb() (*Db, error) {
 		title, _ := jsonparser.GetString(value, "localized_infos", "fr_FR", "title")
 		description, _ := jsonparser.GetString(value, "localized_infos", "fr_FR", "description")
 
-		luniiDb.stories = append(luniiDb.stories, Story{Uuid: uuid.MustParse(storyUuid), Title: title, Description: description})
+		luniiDb.stories = append(
+			luniiDb.stories,
+			Story{
+				Uuid:        uuid.MustParse(storyUuid),
+				Title:       title,
+				Description: description,
+				Origin:      "lunii",
+			})
 		return nil
 	}, "response")
 

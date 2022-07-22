@@ -46,7 +46,11 @@ func GetLStudioMetadataDb(dbPath string) (*Db, error) {
 		title, _ := jsonparser.GetString(value, "title")
 		description, _ := jsonparser.GetString(value, "description")
 
-		studioDb.stories = append(studioDb.stories, Story{Uuid: uuid.MustParse(storyUuid), Title: title, Description: description})
+		studioDb.stories = append(studioDb.stories, Story{
+			Uuid:  uuid.MustParse(storyUuid),
+			Title: title, Description: description,
+			Origin: "studio",
+		})
 		return nil
 	}, "response")
 
