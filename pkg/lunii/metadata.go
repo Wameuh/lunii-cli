@@ -28,13 +28,7 @@ func (device *Device) GetPacks() ([]Metadata, error) {
 	}
 
 	for _, storyUuid := range uuids { // Read md file
-		metadata, _ := GetMetadataFromDevice(storyUuid, device)
-		if metadata == nil {
-			metadata, _ = GetMetadataFromLuniiDb(storyUuid)
-		}
-		if metadata == nil {
-			metadata, _ = GetMetadataFromStudioDb(storyUuid)
-		}
+		metadata, _ := device.GetPacksMetadata(storyUuid)
 		if metadata == nil {
 			metadata = &Metadata{
 				Uuid:        storyUuid,
@@ -49,7 +43,7 @@ func (device *Device) GetPacks() ([]Metadata, error) {
 	return packs, nil
 }
 
-func GetMetadataFromDevice(uuid uuid.UUID, device *Device) (*Metadata, error) {
+func (device *Device) GetPacksMetadata(uuid uuid.UUID) (*Metadata, error) {
 	mdFilePath := filepath.Join(device.MountPoint, ".content", GetRefFromUUid(uuid), "md")
 	metadataFile, err := os.ReadFile(mdFilePath)
 	if err != nil {
@@ -61,47 +55,36 @@ func GetMetadataFromDevice(uuid uuid.UUID, device *Device) (*Metadata, error) {
 		log.Fatal(err)
 		return nil, err
 	}
-
 	metadata.PackOrigin = "custom"
 	return &metadata, nil
 }
 
-func GetMetadataFromLuniiDb(uuid uuid.UUID) (*Metadata, error) {
-	luniiDb, err := GetLuniiMetadataDb()
-	if err != nil {
-		return nil, err
-	}
-	story := luniiDb.GetStoryById(uuid)
+func (device *Device) SyncMetadataFromDb(uuid uuid.UUID, db *Db) error {
+	story := db.GetStoryById(uuid)
 
 	if story == nil {
-		return nil, errors.New("Could not found this uuid in DB")
+		return errors.New("Could not found this uuid in DB")
 	}
 
-	return &Metadata{
+	md := Metadata{
 		Uuid:        uuid,
 		Ref:         GetRefFromUUid(uuid),
 		Title:       story.Title,
 		Description: story.Description,
 		PackOrigin:  "lunii",
-	}, nil
-}
+	}
 
-func GetMetadataFromStudioDb(uuid uuid.UUID) (*Metadata, error) {
-	studioDb, err := GetLStudioMetadataDb()
+	mdYaml, err := yaml.Marshal(&md)
 	if err != nil {
-		return nil, err
-	}
-	story := studioDb.GetStoryById(uuid)
-
-	if story == nil {
-		return nil, errors.New("Could not found this uuid in DB")
+		return err
 	}
 
-	return &Metadata{
-		Uuid:        uuid,
-		Ref:         GetRefFromUUid(uuid),
-		Title:       story.Title,
-		Description: story.Description,
-		PackOrigin:  "custom",
-	}, nil
+	mdFilePath := filepath.Join(device.MountPoint, ".content", GetRefFromUUid(uuid), "md")
+
+	err = os.WriteFile(mdFilePath, mdYaml, 0777)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

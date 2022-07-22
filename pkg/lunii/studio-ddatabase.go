@@ -15,14 +15,18 @@ func getStudioDbPath() string {
 	return filepath.Join(dirname, ".studio", "db", "unofficial.json")
 }
 
-func GetLStudioMetadataDb() (*Db, error) {
+func GetLStudioMetadataDb(dbPath string) (*Db, error) {
 	// Return DB if in cache
 	if studioDb != nil {
 		return studioDb, nil
 	}
 
-	// create DB
 	studioDb = &Db{}
+
+	// if path is empty get default db path
+	if dbPath == "" {
+		dbPath = getStudioDbPath()
+	}
 
 	// read DB from STUdio local DB
 	dbBytes, err := os.ReadFile(getStudioDbPath())
