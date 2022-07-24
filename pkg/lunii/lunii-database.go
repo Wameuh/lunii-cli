@@ -10,8 +10,6 @@ import (
 	"github.com/imroc/req/v3"
 )
 
-var luniiDb *Db = nil
-
 func GetLuniiStoreDb() ([]byte, error) {
 	log.Println("Fetching db from lunii store")
 
@@ -31,13 +29,7 @@ func GetLuniiStoreDb() ([]byte, error) {
 }
 
 func GetLuniiMetadataDb() (*Db, error) {
-	// Return DB if in cache
-	if luniiDb != nil {
-		return luniiDb, nil
-	}
-
-	// create DB
-	luniiDb = &Db{}
+	var luniiDb *Db
 
 	// read DB from temp file
 	tempPath := os.TempDir()

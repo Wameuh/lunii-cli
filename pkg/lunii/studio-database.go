@@ -8,21 +8,13 @@ import (
 	"github.com/google/uuid"
 )
 
-var studioDb *Db = nil
-
 func getStudioDbPath() string {
 	dirname, _ := os.UserHomeDir()
 	return filepath.Join(dirname, ".studio", "db", "unofficial.json")
 }
 
 func GetStudioMetadataDb(dbPath string) (*Db, error) {
-	// Return DB if in cache
-	if studioDb != nil {
-		return studioDb, nil
-	}
-
-	studioDb = &Db{}
-
+	var db *Db
 	// if path is empty get default db path
 	if dbPath == "" {
 		dbPath = getStudioDbPath()
@@ -46,7 +38,7 @@ func GetStudioMetadataDb(dbPath string) (*Db, error) {
 		title, _ := jsonparser.GetString(value, "title")
 		description, _ := jsonparser.GetString(value, "description")
 
-		studioDb.stories = append(studioDb.stories, Story{
+		db.stories = append(db.stories, Story{
 			Uuid:  uuid.MustParse(storyUuid),
 			Title: title, Description: description,
 			PackType: "custom",
@@ -54,5 +46,5 @@ func GetStudioMetadataDb(dbPath string) (*Db, error) {
 		return nil
 	}, "response")
 
-	return studioDb, nil
+	return db, nil
 }
