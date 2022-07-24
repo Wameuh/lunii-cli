@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/mholt/archiver/v4"
 )
@@ -25,7 +26,7 @@ func copyFile(from string, to string) error {
 func zipDir(directoryPath string, archivePath string) error {
 	fmt.Println(directoryPath)
 	files, err := archiver.FilesFromDisk(nil, map[string]string{
-		directoryPath + "/": "",
+		directoryPath + string(filepath.Separator): "",
 	})
 	if err != nil {
 		return err
