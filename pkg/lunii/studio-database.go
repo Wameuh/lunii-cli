@@ -1,6 +1,7 @@
 package lunii
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -9,22 +10,28 @@ import (
 )
 
 func getStudioDbPath() string {
-	dirname, _ := os.UserHomeDir()
-	return filepath.Join(dirname, ".studio", "db", "unofficial.json")
+	homedir, _ := os.UserHomeDir()
+	return filepath.Join(homedir, ".studio", "db", "unofficial.json")
 }
 
 func GetStudioMetadataDb(dbPath string) (*Db, error) {
-	var db *Db
+	db := Db{
+		stories: []Story{},
+	}
+
 	// if path is empty get default db path
 	if dbPath == "" {
 		dbPath = getStudioDbPath()
 	}
 
-	// read DB from STUdio local DB
-	dbBytes, err := os.ReadFile(getStudioDbPath())
+	fmt.Println("Reading Studio db from ", dbPath)
 
-	// if no temp file, return an error
+	// read DB from STUdio local DB
+	dbBytes, err := os.ReadFile(dbPath)
+
+	// if no file, return an error
 	if err != nil {
+		fmt.Println("The db file can't be read")
 		return nil, err
 	}
 
@@ -44,7 +51,7 @@ func GetStudioMetadataDb(dbPath string) (*Db, error) {
 			PackType: "custom",
 		})
 		return nil
-	}, "response")
+	})
 
-	return db, nil
+	return &db, nil
 }

@@ -29,7 +29,9 @@ func GetLuniiStoreDb() ([]byte, error) {
 }
 
 func GetLuniiMetadataDb() (*Db, error) {
-	var luniiDb *Db
+	db := Db{
+		stories: []Story{},
+	}
 
 	// read DB from temp file
 	tempPath := os.TempDir()
@@ -57,8 +59,8 @@ func GetLuniiMetadataDb() (*Db, error) {
 		title, _ := jsonparser.GetString(value, "localized_infos", "fr_FR", "title")
 		description, _ := jsonparser.GetString(value, "localized_infos", "fr_FR", "description")
 
-		luniiDb.stories = append(
-			luniiDb.stories,
+		db.stories = append(
+			db.stories,
 			Story{
 				Uuid:        uuid.MustParse(storyUuid),
 				Title:       title,
@@ -68,5 +70,5 @@ func GetLuniiMetadataDb() (*Db, error) {
 		return nil
 	}, "response")
 
-	return luniiDb, nil
+	return &db, nil
 }
