@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	cp "github.com/otiai10/copy"
 	yaml "gopkg.in/yaml.v3"
@@ -16,6 +17,7 @@ import (
 var wg sync.WaitGroup
 
 func (device *Device) AddStudioPack(studioPack *StudioPack) error {
+	start := time.Now()
 	// 1. Get path on devide
 	rootPath := device.MountPoint
 	contentPath := filepath.Join(rootPath, ".content", studioPack.Ref)
@@ -56,6 +58,9 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 		return err
 	}
 
+	fmt.Println("Generating Binaries : Operation took : ", time.Since(start))
+	start = time.Now()
+
 	fmt.Println("Preparing asset in " + tempPath)
 
 	err = os.WriteFile(filepath.Join(tempPath, "ni"), niBinary, 0777)
@@ -76,6 +81,9 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 	}
 	defer reader.Close()
 
+	fmt.Println("Preparing asset : Operation took : ", time.Since(start))
+	start = time.Now()
+
 	// copy images in rf
 	fmt.Println("Converting images ...")
 
@@ -89,6 +97,9 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 
 	wg.Wait()
 
+	fmt.Println("Converting images : Operation took : ", time.Since(start))
+	start = time.Now()
+
 	// copy audios in sf
 	fmt.Println("Converting audios ...")
 
@@ -101,6 +112,9 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 	}
 
 	wg.Wait()
+
+	fmt.Println("Converting audios : Operation took : ", time.Since(start))
+	start = time.Now()
 
 	// adding metadata
 	fmt.Println("Writing metadata...")
@@ -121,10 +135,15 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("Writing metadata : Operation took : ", time.Since(start))
+	start = time.Now()
 
 	// copy temp to lunii
 	fmt.Println("Copying directory to the device...")
 	cp.Copy(tempPath, contentPath)
+
+	fmt.Println("Copying directory to the device : Operation took : ", time.Since(start))
+	start = time.Now()
 
 	fmt.Println("Adding pack to root index...")
 	// // update .pi root file with uuid
@@ -133,8 +152,13 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 		return err
 	}
 
+	fmt.Println("Adding pack to root index : Operation took : ", time.Since(start))
+	start = time.Now()
+
 	fmt.Println("Cleaning...")
 	_ = os.RemoveAll(tempPath)
+
+	fmt.Println("Cleaning : Operation took : ", time.Since(start))
 
 	return nil
 }

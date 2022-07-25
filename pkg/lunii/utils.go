@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"time"
 
 	"image"
 	_ "image/jpeg"
@@ -52,8 +53,12 @@ func ImageToBmp4(file io.Reader) ([]byte, error) {
 func AudioToMp3(fileBytes []byte) ([]byte, error) {
 	var audioBytes []byte
 
+	start := time.Now()
+
 	// maybe mp3 ?
 	data, mp3Audio, err := minimp3.DecodeFull(fileBytes)
+
+	fmt.Println("Ausio opened in ", time.Since(start))
 
 	if err != nil {
 		// if ogg or wav
@@ -73,6 +78,8 @@ func AudioToMp3(fileBytes []byte) ([]byte, error) {
 	// 	return fileBytes, nil
 	// }
 
+	start = time.Now()
+
 	audioBytes = mp3Audio
 
 	output := new(bytes.Buffer)
@@ -90,6 +97,7 @@ func AudioToMp3(fileBytes []byte) ([]byte, error) {
 	enc.SetWriteID3TagAutomatic(false)
 	enc.Write(audioBytes)
 	enc.Flush()
+	fmt.Println("Audio converted in ", time.Since(start))
 
 	return output.Bytes(), nil
 
