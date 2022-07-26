@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"time"
 
 	"image"
@@ -16,7 +15,6 @@ import (
 	"github.com/tosone/minimp3"
 	"golang.org/x/image/draw"
 
-	"github.com/qiniu/audio"
 	_ "github.com/qiniu/audio/ogg"
 	_ "github.com/qiniu/audio/wav"
 	"github.com/viert/go-lame"
@@ -62,21 +60,22 @@ func AudioToMp3(fileBytes []byte) ([]byte, error) {
 
 	if err != nil {
 		// if ogg or wav
-		source, _, err := audio.Decode(bytes.NewReader(fileBytes))
-		if err != nil {
-			return nil, err
-		}
-		audioBytes, err = ioutil.ReadAll(source)
-		if err != nil {
-			return nil, err
-		}
+		// source, _, err := audio.Decode(bytes.NewReader(fileBytes))
+		// if err != nil {
+		// 	return nil, err
+		// }
+		// audioBytes, err = ioutil.ReadAll(source)
+		// if err != nil {
+		// 	return nil, err
+		// }
+		return nil, err
 	}
 
-	// if data.Channels == 1 && data.SampleRate == 44100 {
-	// 	fmt.Println(len(fileBytes))
-	// 	fmt.Println("No conversion needed")
-	// 	return fileBytes, nil
-	// }
+	if data.Channels == 1 && data.SampleRate == 44100 {
+		fmt.Println(len(fileBytes))
+		fmt.Println("No conversion needed")
+		return fileBytes, nil
+	}
 
 	start = time.Now()
 
