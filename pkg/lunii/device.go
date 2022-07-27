@@ -13,18 +13,27 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/ricochet2200/go-disk-usage/du"
 )
 
+type DiskUsage struct {
+	Free uint64 `json:"free"`
+	Used uint64 `json:"used"`
+	Size uint64 `json:"total"`
+}
+
 type Device struct {
-	MountPoint           string `json:"mountPoint"`
-	Uuid                 []byte `json:"uuid"`
-	UuidHex              string `json:"uuidHex"`
-	SpecificKey          []byte `json:"specificKey"`
-	SerialNumber         string `json:"serialNumber"`
-	FirmwareVersionMajor int16  `json:"firmwareVersionMajor"`
-	FirmwareVersionMinor int16  `json:"firmwareVersionMinor"`
-	SdCardSize           int    `json:"sdCardSize"`
-	SdCardUsed           int    `json:"sdCardUsed"`
+	MountPoint           string     `json:"mountPoint"`
+	Uuid                 []byte     `json:"uuid"`
+	UuidHex              string     `json:"uuidHex"`
+	SpecificKey          []byte     `json:"specificKey"`
+	SerialNumber         string     `json:"serialNumber"`
+	FirmwareVersionMajor int16      `json:"firmwareVersionMajor"`
+	FirmwareVersionMinor int16      `json:"firmwareVersionMinor"`
+	SdCardSize           int        `json:"sdCardSize"`
+	SdCardUsed           int        `json:"sdCardUsed"`
+	DiskUsage            *DiskUsage `json:"diskUsage"`
 }
 
 func skip(reader *bufio.Reader, count int64) {
@@ -97,6 +106,13 @@ func GetDevice() (*Device, error) {
 	device.Uuid = slice
 	device.UuidHex = hex.EncodeToString(slice)
 	device.SpecificKey = computeSpecificKeyFromUUID(slice)
+
+	diskUsage := du.NewDiskUsage(device.MountPoint)
+	device.DiskUsage = &DiskUsage{
+		Free: diskUsage.Free(),
+		Used: diskUsage.Used(),
+		Size: diskUsage.Size(),
+	}
 
 	return &device, nil
 }

@@ -105,3 +105,10 @@ func AudioToMp3(fileBytes []byte) ([]byte, error) {
 func insert(array []uuid.UUID, element uuid.UUID, i int) []uuid.UUID {
 	return append(array[:i], append([]uuid.UUID{element}, array[i:]...)...)
 }
+
+type DiskStatus struct {
+	All   uint64 `json:"all"`
+	Used  uint64 `json:"used"`
+	Free  uint64 `json:"free"`
+	Avail uint64 `json:"avail"`
+}
