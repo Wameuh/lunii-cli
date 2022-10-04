@@ -16,13 +16,32 @@ import (
 
 var wg sync.WaitGroup
 
-func (device *Device) AddStudioPack(studioPack *StudioPack) error {
+func sendUpdate(updateChan *chan string, msg string) {
+	// if no channel ?
+	if updateChan == nil {
+		return
+	}
+
+	// Non blocking send
+	select {
+	case *updateChan <- msg:
+		return
+	default:
+		return
+	}
+}
+
+func (device *Device) AddStudioPack(studioPack *StudioPack, updateChan *chan string) error {
 	start := time.Now()
+	sendUpdate(updateChan, "STARTING")
+	defer sendUpdate(updateChan, "DONE")
+
 	// 1. Get path on devide
 	rootPath := device.MountPoint
 	contentPath := filepath.Join(rootPath, ".content", studioPack.Ref)
 
 	fmt.Println("Generating Binaries...")
+	sendUpdate(updateChan, "GENERATING_BINS")
 
 	stageNodeIndex := &studioPack.StageNodes
 	// generate list node index
@@ -62,6 +81,7 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 	start = time.Now()
 
 	fmt.Println("Preparing asset in " + tempPath)
+	sendUpdate(updateChan, "PREPARING_ASSETS")
 
 	err = os.WriteFile(filepath.Join(tempPath, "ni"), niBinary, 0777)
 	err = os.WriteFile(filepath.Join(tempPath, "li"), liBinaryCiphered, 0777)
@@ -86,6 +106,7 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 
 	// copy images in rf
 	fmt.Println("Converting images ...")
+	sendUpdate(updateChan, "CONVERTING_IMAGES")
 
 	deviceImageDirectory := filepath.Join(tempPath, "rf", "000")
 	os.MkdirAll(deviceImageDirectory, 0700)
@@ -102,6 +123,7 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 
 	// copy audios in sf
 	fmt.Println("Converting audios ...")
+	sendUpdate(updateChan, "CONVERTING_AUDIOS")
 
 	deviceAudioDirectory := filepath.Join(tempPath, "sf", "000")
 	os.MkdirAll(deviceAudioDirectory, 0700)
@@ -118,6 +140,8 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 
 	// adding metadata
 	fmt.Println("Writing metadata...")
+	sendUpdate(updateChan, "WRITING_METADATA")
+
 	md := Metadata{
 		Uuid:        studioPack.Uuid,
 		Ref:         GetRefFromUUid(studioPack.Uuid),
@@ -140,12 +164,16 @@ func (device *Device) AddStudioPack(studioPack *StudioPack) error {
 
 	// copy temp to lunii
 	fmt.Println("Copying directory to the device...")
+	sendUpdate(updateChan, "COPYING")
+
 	cp.Copy(tempPath, contentPath)
 
 	fmt.Println("Copying directory to the device : Operation took : ", time.Since(start))
 	start = time.Now()
 
 	fmt.Println("Adding pack to root index...")
+	sendUpdate(updateChan, "UPDATING_INDEX")
+
 	// // update .pi root file with uuid
 	err = device.AddPackToIndex(studioPack.Uuid)
 	if err != nil {
