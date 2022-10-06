@@ -47,8 +47,13 @@ func GetAudioAssetListFromPack(archive *StudioPack) *[]Asset {
 
 	for i := 0; i < len(archive.StageNodes); i++ {
 		soundAssetFileName := archive.StageNodes[i].Audio
+
 		if soundAssetFileName == "" {
-			continue
+			// in case that the audio is null, we reference a special name
+			// and backfill it to our package representation
+
+			archive.StageNodes[i].Audio = "EMPTY_SOUND"
+			soundAssetFileName = "EMPTY_SOUND"
 		}
 
 		soundAssetsList = append(soundAssetsList, Asset{

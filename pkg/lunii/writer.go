@@ -2,6 +2,7 @@ package lunii
 
 import (
 	"archive/zip"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -193,21 +194,31 @@ func (device *Device) AddStudioPack(studioPack *StudioPack, updateChan *chan str
 
 func convertAndWriteAudio(reader zip.ReadCloser, deviceAudioDirectory string, audio Asset, index int) error {
 	defer wg.Done()
+	var mp3 []byte
+	var err error
 
-	file, err := reader.Open("assets/" + audio.SourceName)
-	if err != nil {
-		return err
-	}
+	// if this is an empty file, we just write a blank mp3
+	if audio.SourceName == "EMPTY_SOUND" {
+		mp3, _ = hex.DecodeString(BLANK_MP3_FILE)
 
-	defer file.Close()
-	fileBytes, err := ioutil.ReadAll(file)
-	if err != nil {
-		return err
-	}
+	} else {
 
-	mp3, err := AudioToMp3(fileBytes)
-	if err != nil {
-		return err
+		// otherwise, let's convert the real file
+		file, err := reader.Open("assets/" + audio.SourceName)
+		if err != nil {
+			return err
+		}
+
+		defer file.Close()
+		fileBytes, err := ioutil.ReadAll(file)
+		if err != nil {
+			return err
+		}
+
+		mp3, err = AudioToMp3(fileBytes)
+		if err != nil {
+			return err
+		}
 	}
 
 	cypheredFile := cipherFirstBlockCommonKey(mp3)
