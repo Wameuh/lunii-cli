@@ -2,6 +2,7 @@ package lunii
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"time"
@@ -56,7 +57,7 @@ func AudioToMp3(fileBytes []byte) ([]byte, error) {
 	// maybe mp3 ?
 	data, mp3Audio, err := minimp3.DecodeFull(fileBytes)
 
-	fmt.Println("Ausio opened in ", time.Since(start))
+	fmt.Println("Audio opened in ", time.Since(start))
 
 	if err != nil {
 		// if ogg or wav
@@ -68,7 +69,7 @@ func AudioToMp3(fileBytes []byte) ([]byte, error) {
 		// if err != nil {
 		// 	return nil, err
 		// }
-		return nil, err
+		return nil, errors.New("Could not decode mp3 file - maybe not an MP3 ?")
 	}
 
 	if data.Channels == 1 && data.SampleRate == 44100 {
@@ -90,6 +91,7 @@ func AudioToMp3(fileBytes []byte) ([]byte, error) {
 	}
 
 	enc.SetVBR(lame.VBRDefault)
+	enc.SetInSamplerate(data.SampleRate)
 	enc.SetVBRQuality(4)
 	enc.SetQuality(4)
 	enc.SetMode(lame.MpegMono)
