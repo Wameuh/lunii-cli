@@ -229,10 +229,12 @@ func convertAndWriteAudio(reader zip.ReadCloser, deviceAudioDirectory string, au
 			// it's an ogg file
 
 			// Didn't work for the moment with the file open with the zip.ReadCloser. So save a temp file and use it.
-			tmpFile, err := os.Create("tmp_" + audio.SourceName)
+			tmpFile, err := os.CreateTemp("", "")
 			if err != nil {
 				return err
 			}
+			defer tmpFile.Close()
+			defer os.Remove(tmpFile.Name())
 
 			if _, err := io.Copy(tmpFile, file); err != nil {
 				tmpFile.Close()
@@ -240,13 +242,10 @@ func convertAndWriteAudio(reader zip.ReadCloser, deviceAudioDirectory string, au
 			}
 
 			tmpFile.Close()
-			tmpFile, err = os.Open("tmp_" + audio.SourceName)
+			tmpFile, err = os.Open(tmpFile.Name())
 			if err != nil {
 				return err
 			}
-
-			defer tmpFile.Close()
-			defer os.Remove("tmp_" + audio.SourceName)
 
 			mp3, err = OggToMp3(tmpFile)
 			if err != nil {
