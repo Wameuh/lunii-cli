@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -228,26 +227,7 @@ func convertAndWriteAudio(reader zip.ReadCloser, deviceAudioDirectory string, au
 		} else if extension == "ogg" {
 			// it's an ogg file
 
-			// Didn't work for the moment with the file open with the zip.ReadCloser. So save a temp file and use it.
-			tmpFile, err := os.CreateTemp("", "")
-			if err != nil {
-				return err
-			}
-			defer tmpFile.Close()
-			defer os.Remove(tmpFile.Name())
-
-			if _, err := io.Copy(tmpFile, file); err != nil {
-				tmpFile.Close()
-				return err
-			}
-
-			tmpFile.Close()
-			tmpFile, err = os.Open(tmpFile.Name())
-			if err != nil {
-				return err
-			}
-
-			mp3, err = OggToMp3(tmpFile)
+			mp3, err = OggToMp3(file)
 			if err != nil {
 				return err
 			}

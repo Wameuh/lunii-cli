@@ -120,12 +120,6 @@ func convertSliceToInt16Slice(mySlice []float32) []int16 {
 }
 
 func GetByteSlice(r io.Reader) ([]byte, *oggvorbis.Format, error) {
-	var format *oggvorbis.Format
-	format, err := oggvorbis.GetFormat(r)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	oggAudio, format, err := oggvorbis.ReadAll(r)
 	if err != nil {
 		return nil, nil, errors.New("Could not decode ogg file?")
