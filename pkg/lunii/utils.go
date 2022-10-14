@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"time"
+	"unsafe"
 
 	"image"
 	_ "image/jpeg"
@@ -16,6 +18,7 @@ import (
 	"github.com/tosone/minimp3"
 	"golang.org/x/image/draw"
 
+	"github.com/jfreymuth/oggvorbis"
 	_ "github.com/qiniu/audio/ogg"
 	_ "github.com/qiniu/audio/wav"
 	"github.com/viert/go-lame"
@@ -51,9 +54,7 @@ func ImageToBmp4(file io.Reader) ([]byte, error) {
 	return bmp4.GetBitmap(grayscale), nil
 }
 
-func AudioToMp3(fileBytes []byte) ([]byte, error) {
-	var audioBytes []byte
-
+func Mp3ToMp3(fileBytes []byte) ([]byte, error) {
 	start := time.Now()
 
 	// maybe mp3 ?
@@ -80,30 +81,67 @@ func AudioToMp3(fileBytes []byte) ([]byte, error) {
 		return fileBytes, nil
 	}
 
-	start = time.Now()
+	return encodeMp3(mp3Audio, data.Channels, data.SampleRate)
 
-	audioBytes = mp3Audio
+}
 
+func encodeMp3(audioBytes []byte, dataChannel int, dataSampleRate int) ([]byte, error) {
 	output := new(bytes.Buffer)
 	enc := lame.NewEncoder(output)
 	defer enc.Close()
 
-	if data.Channels == 1 {
+	if dataChannel == 1 {
 		enc.SetNumChannels(1)
 	}
 
 	enc.SetVBR(lame.VBRDefault)
-	enc.SetInSamplerate(data.SampleRate)
+	enc.SetInSamplerate(dataSampleRate)
 	enc.SetVBRQuality(4)
 	enc.SetQuality(4)
 	enc.SetMode(lame.MpegMono)
 	enc.SetWriteID3TagAutomatic(false)
 	enc.Write(audioBytes)
 	enc.Flush()
-	fmt.Println("Audio converted in ", time.Since(start))
 
 	return output.Bytes(), nil
+}
 
+func float32toint16(num float32) int16 {
+
+	return int16(math.Max(1-math.Pow(2, 15), (math.Min(math.Pow(2, 15)-1, float64(num)*math.Pow(2, 16)))))
+}
+
+func convertSliceToInt16Slice(mySlice []float32) []int16 {
+	retval := make([]int16, 0)
+	for _, v := range mySlice {
+		retval = append(retval, float32toint16(v))
+	}
+	return retval
+}
+
+func GetByteSlice(r io.Reader) ([]byte, *oggvorbis.Format, error) {
+	var format *oggvorbis.Format
+	format, err := oggvorbis.GetFormat(r)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	oggAudio, format, err := oggvorbis.ReadAll(r)
+	if err != nil {
+		return nil, nil, errors.New("Could not decode ogg file?")
+	}
+
+	audioBytes := convertSliceToInt16Slice(oggAudio)
+
+	return *(*[]byte)(unsafe.Pointer(&audioBytes)), format, nil
+}
+func OggToMp3(file io.Reader) ([]byte, error) {
+	audioBytes, format, err := GetByteSlice(file)
+	if err != nil {
+		return nil, errors.New("Could not decode ogg file?")
+	}
+
+	return encodeMp3(audioBytes, format.Channels, format.SampleRate)
 }
 
 func insert(array []uuid.UUID, element uuid.UUID, i int) []uuid.UUID {

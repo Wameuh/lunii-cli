@@ -21,7 +21,7 @@ func TestMp3(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	result, err := AudioToMp3(data)
+	result, err := Mp3ToMp3(data)
 	if err != nil {
 		log.Fatal(err)
 	}

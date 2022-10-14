@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -202,6 +203,10 @@ func convertAndWriteAudio(reader zip.ReadCloser, deviceAudioDirectory string, au
 		mp3, _ = hex.DecodeString(BLANK_MP3_FILE)
 
 	} else {
+		start := time.Now()
+
+		//check extension
+		extension := audio.SourceName[len(audio.SourceName)-3:]
 
 		// otherwise, let's convert the real file
 		file, err := reader.Open("assets/" + audio.SourceName)
@@ -210,15 +215,48 @@ func convertAndWriteAudio(reader zip.ReadCloser, deviceAudioDirectory string, au
 		}
 
 		defer file.Close()
-		fileBytes, err := ioutil.ReadAll(file)
-		if err != nil {
-			return err
-		}
 
-		mp3, err = AudioToMp3(fileBytes)
-		if err != nil {
-			return err
+		if extension == "mp3" {
+			fileBytes, err := ioutil.ReadAll(file)
+			if err != nil {
+				return err
+			}
+			mp3, err = Mp3ToMp3(fileBytes)
+			if err != nil {
+				return err
+			}
+		} else if extension == "ogg" {
+			// it's an ogg file
+
+			// Didn't work for the moment with the file open with the zip.ReadCloser. So save a temp file and use it.
+			tmpFile, err := os.CreateTemp("", "")
+			if err != nil {
+				return err
+			}
+			defer tmpFile.Close()
+			defer os.Remove(tmpFile.Name())
+
+			if _, err := io.Copy(tmpFile, file); err != nil {
+				tmpFile.Close()
+				return err
+			}
+
+			tmpFile.Close()
+			tmpFile, err = os.Open(tmpFile.Name())
+			if err != nil {
+				return err
+			}
+
+			mp3, err = OggToMp3(tmpFile)
+			if err != nil {
+				return err
+			}
+
+		} else {
+			return errors.New("Audio file format not supported")
 		}
+		fmt.Println("Audio converted in ", time.Since(start))
+
 	}
 
 	cypheredFile := cipherFirstBlockCommonKey(mp3)
