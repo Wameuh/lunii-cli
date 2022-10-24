@@ -2,12 +2,12 @@ package lunii
 
 import (
 	"bytes"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
 	"math"
 	"time"
-	"unsafe"
 
 	"image"
 	_ "image/jpeg"
@@ -94,9 +94,11 @@ func encodeMp3(audioBytes []byte, dataChannel int, dataSampleRate int) ([]byte, 
 		enc.SetNumChannels(1)
 	}
 
-	enc.SetVBR(lame.VBRDefault)
+	err := enc.SetVBR(lame.VBROff) //To be in CBR Mode
+	if err != nil {
+		return nil, err
+	}
 	enc.SetInSamplerate(dataSampleRate)
-	enc.SetVBRQuality(4)
 	enc.SetQuality(4)
 	enc.SetMode(lame.MpegMono)
 	enc.SetWriteID3TagAutomatic(false)
@@ -111,10 +113,10 @@ func float32toint16(num float32) int16 {
 	return int16(math.Max(1-math.Pow(2, 15), (math.Min(math.Pow(2, 15)-1, float64(num)*math.Pow(2, 16)))))
 }
 
-func convertSliceToInt16Slice(mySlice []float32) []int16 {
-	retval := make([]int16, 0)
-	for _, v := range mySlice {
-		retval = append(retval, float32toint16(v))
+func convertSliceToInt16Slice(mySlice []float32) []byte {
+	retval := make([]byte, len(mySlice)*2)
+	for i, v := range mySlice {
+		binary.LittleEndian.PutUint16(retval[i*2:], uint16(float32toint16(v)))
 	}
 	return retval
 }
@@ -122,13 +124,11 @@ func convertSliceToInt16Slice(mySlice []float32) []int16 {
 func GetByteSlice(r io.Reader) ([]byte, *oggvorbis.Format, error) {
 	oggAudio, format, err := oggvorbis.ReadAll(r)
 	if err != nil {
-		return nil, nil, errors.New("Could not decode ogg file?")
+		return nil, nil, err
 	}
-
-	audioBytes := convertSliceToInt16Slice(oggAudio)
-
-	return *(*[]byte)(unsafe.Pointer(&audioBytes)), format, nil
+	return convertSliceToInt16Slice(oggAudio), format, nil
 }
+
 func OggToMp3(file io.Reader) ([]byte, error) {
 	audioBytes, format, err := GetByteSlice(file)
 	if err != nil {
