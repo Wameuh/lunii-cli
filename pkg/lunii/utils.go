@@ -95,6 +95,7 @@ func encodeMp3(audioBytes []byte, dataChannel int, dataSampleRate int) ([]byte, 
 	}
 
 	enc.SetVBR(lame.VBRDefault)
+	enc.SetVBRQuality(4)
 	enc.SetInSamplerate(dataSampleRate)
 	enc.SetQuality(4)
 	enc.SetMode(lame.MpegMono)
