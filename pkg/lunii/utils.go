@@ -110,7 +110,7 @@ func encodeMp3(audioBytes []byte, dataChannel int, dataSampleRate int) ([]byte, 
 
 func float32toint16(num float32) int16 {
 
-	return int16(math.Max(1-math.Pow(2, 15), (math.Min(math.Pow(2, 15)-1, float64(num)*math.Pow(2, 16)))))
+	return int16(math.Max(1-(1<<15), (math.Min((1<<15)-1, float64(num)*(1<<16)))))
 }
 
 func convertSliceToInt16Slice(mySlice []float32) []byte {
